@@ -26,4 +26,4 @@ FROM alpine:3.10
 COPY --from=gobuild /etc/ssl/certs /etc/ssl/certs
 COPY --from=gobuild /goapp/main go-graphql-srv
 
-CMD ./go-graphql-srv --debug --addr=127.0.0.1:8080 --dbaddr=127.0.0.1:27017
+CMD ./go-graphql-srv --debug --addr=127.0.0.1:8080

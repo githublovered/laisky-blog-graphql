@@ -43,7 +43,6 @@ func setupArgs() {
 	pflag.Bool("debug", false, "run in debug mode")
 	pflag.Bool("dry", false, "run in dry mode")
 	pflag.String("addr", "localhost:8080", "like `localhost:8080`")
-	pflag.String("dbaddr", "localhost:8080", "like `localhost:8080`")
 	pflag.String("config", "/etc/laisky-blog-graphql/settings", "config file directory path")
 	pflag.String("log-level", "info", "`debug/info/error`")
 	pflag.Int("heartbeat", 60, "heartbeat seconds")
