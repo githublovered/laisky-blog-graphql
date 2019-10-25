@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
 
 	"github.com/Laisky/go-utils"
 	laisky_blog_graphql "github.com/Laisky/laisky-blog-graphql"
@@ -51,7 +50,7 @@ func setupArgs() {
 	pflag.String("log-level", "info", "`debug/info/error`")
 	pflag.Int("heartbeat", 60, "heartbeat seconds")
 	pflag.Parse()
-	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
+	if err := utils.Settings.BindPFlags(pflag.CommandLine); err != nil {
 		utils.Logger.Panic("parse command args", zap.Error(err))
 	}
 }
