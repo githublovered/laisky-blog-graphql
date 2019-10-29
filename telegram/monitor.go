@@ -34,12 +34,15 @@ func (b *Telegram) chooseMonitor(us *userStat, msg *tb.Message) {
 
 	switch ans[0] {
 	case "1": // create new monitor
-		createNewMonitor()
+		b.createNewMonitor(us)
 	default:
 		b.PleaseRetry(us.user, msg.Text)
 	}
 }
 
-func createNewMonitor() {
-
+func (b *Telegram) createNewMonitor(us *userStat) {
+	u, err := b.db.CreateOrGetUser(us.user)
+	if err != nil {
+		utils.Logger.Error("create or get user", zap.Error(err), zap.Int("uid", us.user.ID))
+	}
 }

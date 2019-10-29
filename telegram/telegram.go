@@ -80,7 +80,7 @@ func NewTelegram(ctx context.Context, db *MonitorDB, token, api string) (*Telegr
 		bot.Stop()
 	}()
 
-	// bot.Send(&tb.Chat{
+	// bot.Send(&tb.User{
 	// 	ID: 861999008,
 	// }, "yo")
 
@@ -90,7 +90,7 @@ func NewTelegram(ctx context.Context, db *MonitorDB, token, api string) (*Telegr
 func (b *Telegram) runDefaultHandle() {
 	// start default handler
 	b.bot.Handle(tb.OnText, func(m *tb.Message) {
-		utils.Logger.Debug("got message", zap.String("msg", m.Text))
+		utils.Logger.Debug("got message", zap.String("msg", m.Text), zap.Int("sender", m.Sender.ID))
 		sender := m.Sender
 		if _, ok := b.userStats.Load(sender); ok {
 			b.dispatcher(m)
