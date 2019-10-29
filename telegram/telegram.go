@@ -56,7 +56,7 @@ func NewTelegram(ctx context.Context, db *MonitorDB, token, api string) (*Telegr
 		Token: token,
 		URL:   api,
 		Poller: &tb.LongPoller{
-			Timeout: 10 * time.Second,
+			Timeout: 5 * time.Second,
 		},
 	})
 	if err != nil {
@@ -91,8 +91,7 @@ func (b *Telegram) runDefaultHandle() {
 	// start default handler
 	b.bot.Handle(tb.OnText, func(m *tb.Message) {
 		utils.Logger.Debug("got message", zap.String("msg", m.Text), zap.Int("sender", m.Sender.ID))
-		sender := m.Sender
-		if _, ok := b.userStats.Load(sender); ok {
+		if _, ok := b.userStats.Load(m.Sender.ID); ok {
 			b.dispatcher(m)
 			return
 		}
@@ -109,7 +108,7 @@ func (b *Telegram) Stop() {
 }
 
 func (b *Telegram) dispatcher(msg *tb.Message) {
-	us, ok := b.userStats.Load(msg.Sender)
+	us, ok := b.userStats.Load(msg.Sender.ID)
 	if !ok {
 		return
 	}
@@ -126,5 +125,5 @@ func (b *Telegram) dispatcher(msg *tb.Message) {
 // PleaseRetry echo retry
 func (b *Telegram) PleaseRetry(sender *tb.User, msg string) {
 	utils.Logger.Warn("unknown msg", zap.String("msg", msg))
-	b.bot.Send(sender, "unknown msg, please retry")
+	b.bot.Send(sender, "[Error] unknown msg, please retry")
 }
