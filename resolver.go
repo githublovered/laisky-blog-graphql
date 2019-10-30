@@ -54,13 +54,13 @@ func (t *twitterUserResolver) Description(ctx context.Context, obj *twitter.User
 	return obj.Dscription, nil
 }
 
-func (q *queryResolver) Benchmark(ctx context.Context) (string, error) {
+func (q *queryResolver) Hello(ctx context.Context) (string, error) {
 	return "hello, world", nil
 }
-func (q *queryResolver) Postinfo(ctx context.Context) (*blog.PostInfo, error) {
+func (q *queryResolver) BlogPostInfo(ctx context.Context) (*blog.PostInfo, error) {
 	return blogDB.LoadPostInfo()
 }
-func (q *queryResolver) Tweets(ctx context.Context, page *Pagination, username string, sort *Sort, topic string, regexp string) ([]*twitter.Tweet, error) {
+func (q *queryResolver) TwitterStatues(ctx context.Context, page *Pagination, username string, sort *Sort, topic string, regexp string) ([]*twitter.Tweet, error) {
 	if results, err := twitterDB.LoadTweets(&twitter.TweetLoadCfg{
 		Page:      page.Page,
 		Regexp:    regexp,
@@ -74,7 +74,7 @@ func (q *queryResolver) Tweets(ctx context.Context, page *Pagination, username s
 		return results, nil
 	}
 }
-func (q *queryResolver) Posts(ctx context.Context, page *Pagination, tag string, categoryURL *string, length int, name string, regexp string) ([]*blog.Post, error) {
+func (q *queryResolver) BlogPosts(ctx context.Context, page *Pagination, tag string, categoryURL *string, length int, name string, regexp string) ([]*blog.Post, error) {
 	cfg := &blog.BlogPostCfg{
 		Page:        page.Page,
 		Size:        page.Size,
@@ -90,7 +90,7 @@ func (q *queryResolver) Posts(ctx context.Context, page *Pagination, tag string,
 		return results, nil
 	}
 }
-func (q *queryResolver) PostCategories(ctx context.Context) ([]*blog.Category, error) {
+func (q *queryResolver) BlogPostCategories(ctx context.Context) ([]*blog.Category, error) {
 	return blogDB.LoadAllCategories()
 }
 
@@ -173,7 +173,7 @@ func (r *blogUserResolver) ID(ctx context.Context, obj *blog.User) (string, erro
 // =========
 type mutationResolver struct{ *Resolver }
 
-func (r *mutationResolver) CreateBlogPost(ctx context.Context, input NewBlogPost) (*blog.Post, error) {
+func (r *mutationResolver) BlogCreatePost(ctx context.Context, input NewBlogPost) (*blog.Post, error) {
 	user, err := validateAndGetUser(ctx)
 	if err != nil {
 		utils.Logger.Debug("user invalidate", zap.Error(err))
@@ -183,7 +183,7 @@ func (r *mutationResolver) CreateBlogPost(ctx context.Context, input NewBlogPost
 	return blogDB.NewPost(user.ID, string(input.Title), input.Name, string(input.Markdown), input.Type.String())
 }
 
-func (r *mutationResolver) Login(ctx context.Context, account string, password string) (user *blog.User, err error) {
+func (r *mutationResolver) BlogLogin(ctx context.Context, account string, password string) (user *blog.User, err error) {
 	if user, err = blogDB.ValidateLogin(account, password); err != nil {
 		utils.Logger.Debug("user invalidate", zap.Error(err))
 		return nil, err
@@ -197,7 +197,7 @@ func (r *mutationResolver) Login(ctx context.Context, account string, password s
 	return user, nil
 }
 
-func (r *mutationResolver) AmendBlogPost(ctx context.Context, post NewBlogPost) (*blog.Post, error) {
+func (r *mutationResolver) BlogAmendPost(ctx context.Context, post NewBlogPost) (*blog.Post, error) {
 	user, err := validateAndGetUser(ctx)
 	if err != nil {
 		utils.Logger.Debug("user invalidate", zap.Error(err))

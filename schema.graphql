@@ -18,24 +18,24 @@ input Sort {
 }
 
 type Query {
-  benchmark: String!
+  Hello: String!
 
   # twitter
-  tweets(page: Pagination = {page: 0, size: 20},
+  TwitterStatues(page: Pagination = {page: 0, size: 20},
     username: String! = "ppcelery",
     sort: Sort = {sort_by: "id", order: DESC},
     topic: String! = "",
     regexp: String! = ""): [Tweet]!
 
   # blog
-  posts(page: Pagination = {page: 0, size: 10},
+  BlogPosts(page: Pagination = {page: 0, size: 10},
     tag: String! = "",
     category_url: String,  # "" means empty, nil means ignore
     length: Int! = 0,  # content length, 0 means total
     name: String! = "",
     regexp: String! = ""): [BlogPost]!
-  postinfo: PostInfo!
-  post_categories: [BlogCategory]!
+  BlogPostInfo: PostInfo!
+  BlogPostCategories: [BlogCategory]!
 }
 
 
@@ -47,7 +47,7 @@ input NewBlogPost {
 }
 
 type Mutation {
-  createBlogPost(post: NewBlogPost!): BlogPost!
-  login(account: String!, password: String!): BlogUser!
-  amendBlogPost(post: NewBlogPost!): BlogPost!
+  BlogCreatePost(post: NewBlogPost!): BlogPost!
+  BlogLogin(account: String!, password: String!): BlogUser!
+  BlogAmendPost(post: NewBlogPost!): BlogPost!
 }
