@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -22,11 +23,12 @@ func (b *Telegram) monitorHandler() {
 		if _, err := b.bot.Send(c.Sender, `
 Reply number:
 
-	1 - new monitor's name  # reply "1 - demo"
+	1 - new alert's name  # reply "1 - alert_name"
 	2 - list all joint alerts  # reply "2"
-	3 - join alert name:join_key  # reply "3 - demo:your_join_key"
+	3 - join alert  # reply "3 - alert_name:join_key"
 	4 - refresh push_token & join_key  # reply "4 - alert_name"
-	5 - quit alert  $ reply "5 - alert_name"
+	5 - quit alert  # reply "5 - alert_name"
+	6 - kick user  # reply "6 - alert_name:uid"
 `); err != nil {
 			utils.Logger.Error("reply msg", zap.Error(err))
 		}
@@ -76,9 +78,68 @@ func (b *Telegram) chooseMonitor(us *userStat, msg *tb.Message) {
 			utils.Logger.Warn("userQuitAlert", zap.Error(err))
 			b.bot.Send(us.user, "[Error] "+err.Error())
 		}
+	case "6":
+		if err = b.kickUser(us, ans[1]); err != nil {
+			utils.Logger.Warn("kickUser", zap.Error(err))
+			b.bot.Send(us.user, "[Error] "+err.Error())
+		}
 	default:
 		b.PleaseRetry(us.user, msg.Text)
 	}
+}
+
+func (b *Telegram) kickUser(us *userStat, au string) (err error) {
+	if !strings.Contains(au, ":") {
+		return fmt.Errorf("unknown alert_name:uid format")
+	}
+	ans := strings.SplitN(strings.TrimSpace(au), ":", 2)
+	alertName := ans[0]
+	kickUID, err := strconv.ParseInt(ans[1], 10, 64)
+	if err != nil {
+		return errors.Wrap(err, "parse uid to")
+	}
+
+	var alertType *AlertTypes
+	alertType, err = b.db.IsUserSubAlert(us.user.ID, alertName)
+	if err != nil {
+		return errors.Wrap(err, "load alert by user uid")
+	}
+
+	var kickedUser *Users
+	kickedUser, err = b.db.LoadUserByUID(int(kickUID))
+	if err != nil {
+		return errors.Wrap(err, "load user by kicked user uid")
+	}
+
+	if err = b.db.RemoveUAR(kickedUser.UID, alertName); err != nil {
+		return errors.Wrap(err, "remove user_alert_relation")
+	}
+	utils.Logger.Info("remove user_alert_relation",
+		zap.String("user_name", kickedUser.Name),
+		zap.String("alert_type", alertName),
+		zap.String("user", kickedUser.ID.Hex()))
+
+	msg := "<" + us.user.Username + "> kick user:\n"
+	msg += "alert_type: " + alertName + "\n"
+	msg += "kicked_user: " + kickedUser.Name + " (" + ans[1] + ")\n"
+
+	users, err := b.db.LoadUsersByAlertType(alertType)
+	if err != nil {
+		return errors.Wrap(err, "load users")
+	}
+	users = append(users, kickedUser)
+
+	errMsg := ""
+	for _, user := range users {
+		if err = b.SendMsgToUser(user.UID, msg); err != nil {
+			errMsg += err.Error()
+		}
+	}
+	if errMsg != "" {
+		err = fmt.Errorf(errMsg)
+	}
+
+	return err
 }
 
 func (b *Telegram) userQuitAlert(us *userStat, alertName string) (err error) {
@@ -135,7 +196,7 @@ func (b *Telegram) joinAlertGroup(us *userStat, kt string) (err error) {
 		return err
 	}
 
-	return b.SendMsgToUser(us.user.ID, alert+"(joint at "+uar.CreatedAt.Format(time.RFC3339)+")")
+	return b.SendMsgToUser(us.user.ID, alert+" (joint at "+uar.CreatedAt.Format(time.RFC3339)+")")
 }
 
 func (b *Telegram) listAllMonitorAlerts(us *userStat) (err error) {
