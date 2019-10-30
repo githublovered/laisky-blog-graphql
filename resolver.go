@@ -285,6 +285,7 @@ func (r *mutationResolver) TelegramMonitorAlert(ctx context.Context, typeArg str
 	}
 
 	errMsg := ""
+	msg = typeArg + ">>>>>>>>>>>>>>>>>> " + "\n" + msg
 	for _, user := range users {
 		if err = telegramCli.SendMsgToUser(user.UID, msg); err != nil {
 			utils.Logger.Error("send msg to user", zap.Error(err), zap.Int("uid", user.UID), zap.String("msg", msg))

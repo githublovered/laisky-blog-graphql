@@ -284,3 +284,18 @@ func (db *MonitorDB) ValidateTokenForAlertType(token, alert_type string) (alert 
 
 	return alert, nil
 }
+
+func (db *MonitorDB) LoadUserByUID(telegramUID int) (u *Users, err error) {
+	utils.Logger.Debug("LoadUserByUID", zap.Int("uid", telegramUID))
+
+	u = new(Users)
+	if err = db.GetUsersCol().Find(bson.M{
+		"uid": telegramUID,
+	}).One(u); err == mgo.ErrNotFound {
+		return nil, fmt.Errorf("not found user by uid")
+	} else if err != nil {
+		return nil, errors.Wrap(err, "load user in db by uid")
+	}
+
+	return u, nil
+}
