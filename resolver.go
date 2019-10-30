@@ -252,7 +252,6 @@ func (r *mutationResolver) BlogCreatePost(ctx context.Context, input NewBlogPost
 
 	return blogDB.NewPost(user.ID, string(input.Title), input.Name, string(input.Markdown), input.Type.String())
 }
-
 func (r *mutationResolver) BlogLogin(ctx context.Context, account string, password string) (user *blog.User, err error) {
 	if user, err = blogDB.ValidateLogin(account, password); err != nil {
 		utils.Logger.Debug("user invalidate", zap.Error(err))
@@ -266,7 +265,6 @@ func (r *mutationResolver) BlogLogin(ctx context.Context, account string, passwo
 
 	return user, nil
 }
-
 func (r *mutationResolver) BlogAmendPost(ctx context.Context, post NewBlogPost) (*blog.Post, error) {
 	user, err := validateAndGetUser(ctx)
 	if err != nil {
@@ -275,4 +273,28 @@ func (r *mutationResolver) BlogAmendPost(ctx context.Context, post NewBlogPost) 
 	}
 
 	return blogDB.UpdatePost(user, post.Name, string(post.Title), string(post.Markdown), string(post.Type))
+}
+func (r *mutationResolver) TelegramMonitorAlert(ctx context.Context, typeArg string, token string, msg string) (*telegram.AlertTypes, error) {
+	alert, err := monitorDB.ValidateTokenForAlertType(token, typeArg)
+	if err != nil {
+		return nil, err
+	}
+	users, err := monitorDB.LoadUsersByAlertType(alert)
+	if err != nil {
+		return nil, err
+	}
+
+	errMsg := ""
+	for _, user := range users {
+		if err = telegramCli.SendMsgToUser(user.UID, msg); err != nil {
+			utils.Logger.Error("send msg to user", zap.Error(err), zap.Int("uid", user.UID), zap.String("msg", msg))
+			errMsg += err.Error()
+		}
+	}
+
+	if errMsg != "" {
+		err = fmt.Errorf(errMsg)
+	}
+
+	return alert, err
 }

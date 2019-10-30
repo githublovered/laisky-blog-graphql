@@ -127,3 +127,10 @@ func (b *Telegram) PleaseRetry(sender *tb.User, msg string) {
 	utils.Logger.Warn("unknown msg", zap.String("msg", msg))
 	b.bot.Send(sender, "[Error] unknown msg, please retry")
 }
+
+func (b *Telegram) SendMsgToUser(uid int, msg string) (err error) {
+	_, err = b.bot.Send(&tb.User{
+		ID: uid,
+	}, msg)
+	return err
+}

@@ -76,9 +76,10 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		BlogAmendPost  func(childComplexity int, post NewBlogPost) int
-		BlogCreatePost func(childComplexity int, post NewBlogPost) int
-		BlogLogin      func(childComplexity int, account string, password string) int
+		BlogAmendPost        func(childComplexity int, post NewBlogPost) int
+		BlogCreatePost       func(childComplexity int, post NewBlogPost) int
+		BlogLogin            func(childComplexity int, account string, password string) int
+		TelegramMonitorAlert func(childComplexity int, typeArg string, token string, msg string) int
 	}
 
 	PostInfo struct {
@@ -149,6 +150,7 @@ type MutationResolver interface {
 	BlogCreatePost(ctx context.Context, post NewBlogPost) (*blog.Post, error)
 	BlogLogin(ctx context.Context, account string, password string) (*blog.User, error)
 	BlogAmendPost(ctx context.Context, post NewBlogPost) (*blog.Post, error)
+	TelegramMonitorAlert(ctx context.Context, typeArg string, token string, msg string) (*telegram.AlertTypes, error)
 }
 type QueryResolver interface {
 	Hello(ctx context.Context) (string, error)
@@ -345,6 +347,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.BlogLogin(childComplexity, args["account"].(string), args["password"].(string)), true
+
+	case "Mutation.TelegramMonitorAlert":
+		if e.complexity.Mutation.TelegramMonitorAlert == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_TelegramMonitorAlert_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.TelegramMonitorAlert(childComplexity, args["type"].(string), args["token"].(string), args["msg"].(string)), true
 
 	case "PostInfo.Total":
 		if e.complexity.PostInfo.Total == nil {
@@ -815,9 +829,13 @@ type Query {
 
 
 type Mutation {
+  # blog
   BlogCreatePost(post: NewBlogPost!): BlogPost!
   BlogLogin(account: String!, password: String!): BlogUser!
   BlogAmendPost(post: NewBlogPost!): BlogPost!
+
+  # telegram monitor
+  TelegramMonitorAlert(type: String!, token: String!, msg: String!): TelegramAlertType!
 }
 `},
 )
@@ -873,6 +891,36 @@ func (ec *executionContext) field_Mutation_BlogLogin_args(ctx context.Context, r
 		}
 	}
 	args["password"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_TelegramMonitorAlert_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["type"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["type"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["token"]; ok {
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["token"] = arg1
+	var arg2 string
+	if tmp, ok := rawArgs["msg"]; ok {
+		arg2, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["msg"] = arg2
 	return args, nil
 }
 
@@ -1565,6 +1613,40 @@ func (ec *executionContext) _Mutation_BlogAmendPost(ctx context.Context, field g
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNBlogPost2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋblogᚐPost(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_TelegramMonitorAlert(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_TelegramMonitorAlert_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().TelegramMonitorAlert(rctx, args["type"].(string), args["token"].(string), args["msg"].(string))
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*telegram.AlertTypes)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNTelegramAlertType2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋtelegramᚐAlertTypes(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _PostInfo_total(ctx context.Context, field graphql.CollectedField, obj *blog.PostInfo) graphql.Marshaler {
@@ -3696,6 +3778,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalid = true
 			}
+		case "TelegramMonitorAlert":
+			out.Values[i] = ec._Mutation_TelegramMonitorAlert(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalid = true
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4678,6 +4765,10 @@ func (ec *executionContext) marshalNString2ᚕstring(ctx context.Context, sel as
 	return ret
 }
 
+func (ec *executionContext) marshalNTelegramAlertType2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋtelegramᚐAlertTypes(ctx context.Context, sel ast.SelectionSet, v telegram.AlertTypes) graphql.Marshaler {
+	return ec._TelegramAlertType(ctx, sel, &v)
+}
+
 func (ec *executionContext) marshalNTelegramAlertType2ᚕᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋtelegramᚐAlertTypes(ctx context.Context, sel ast.SelectionSet, v []*telegram.AlertTypes) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -4713,6 +4804,16 @@ func (ec *executionContext) marshalNTelegramAlertType2ᚕᚖgithubᚗcomᚋLaisk
 	}
 	wg.Wait()
 	return ret
+}
+
+func (ec *executionContext) marshalNTelegramAlertType2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋtelegramᚐAlertTypes(ctx context.Context, sel ast.SelectionSet, v *telegram.AlertTypes) graphql.Marshaler {
+	if v == nil {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._TelegramAlertType(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNTelegramUser2ᚕᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋtelegramᚐUsers(ctx context.Context, sel ast.SelectionSet, v []*telegram.Users) graphql.Marshaler {

@@ -50,7 +50,11 @@ type Query {
 
 
 type Mutation {
+  # blog
   BlogCreatePost(post: NewBlogPost!): BlogPost!
   BlogLogin(account: String!, password: String!): BlogUser!
   BlogAmendPost(post: NewBlogPost!): BlogPost!
+
+  # telegram monitor
+  TelegramMonitorAlert(type: String!, token: String!, msg: String!): TelegramAlertType!
 }

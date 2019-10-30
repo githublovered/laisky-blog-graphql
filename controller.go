@@ -9,21 +9,24 @@ import (
 	utils "github.com/Laisky/go-utils"
 )
 
+var (
+	telegramCli *telegram.Telegram
+)
+
 func setupTasks(ctx context.Context) {
+	var err error
 	for _, task := range utils.Settings.GetStringSlice("tasks") {
 		switch task {
 		case "telegram":
 			utils.Logger.Info("enable telegram")
-			t, err := telegram.NewTelegram(
+			if telegramCli, err = telegram.NewTelegram(
 				ctx,
 				monitorDB,
 				utils.Settings.GetString("settings.telegram.token"),
 				utils.Settings.GetString("settings.telegram.api"),
-			)
-			if err != nil {
+			); err != nil {
 				utils.Logger.Panic("new telegram", zap.Error(err))
 			}
-			utils.Settings.Set(telegram.TelegramCliKey, t)
 		default:
 			utils.Logger.Panic("unknown task", zap.String("task", task))
 		}
