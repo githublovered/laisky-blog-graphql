@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/Laisky/go-utils"
@@ -19,6 +20,10 @@ const (
 	alertTypeColName         = "alert_types"
 	usersColName             = "users"
 	userAlertRelationColName = "user_alert_relations"
+)
+
+var (
+	AlreadyExistsErr = errors.New("already exists")
 )
 
 type TelegramQueryCfg struct {
@@ -102,6 +107,14 @@ func (db *MonitorDB) CreateOrGetUser(user *tb.User) (u *Users, err error) {
 	return u, nil
 }
 
+func generatePushToken() string {
+	return utils.RandomStringWithLength(20)
+}
+
+func generateJoinKey() string {
+	return utils.RandomStringWithLength(6)
+}
+
 func (db *MonitorDB) CreateAlertType(name string) (at *AlertTypes, err error) {
 	// check if exists
 	var info *mgo.ChangeInfo
@@ -109,8 +122,8 @@ func (db *MonitorDB) CreateAlertType(name string) (at *AlertTypes, err error) {
 		bson.M{"name": name},
 		bson.M{"$setOnInsert": bson.M{
 			"name":        name,
-			"push_token":  utils.RandomStringWithLength(20),
-			"join_key":    utils.RandomStringWithLength(6),
+			"push_token":  generatePushToken(),
+			"join_key":    generateJoinKey(),
 			"created_at":  utils.Clock.GetUTCNow(),
 			"modified_at": utils.Clock.GetUTCNow(),
 		}},
@@ -118,7 +131,7 @@ func (db *MonitorDB) CreateAlertType(name string) (at *AlertTypes, err error) {
 		return nil, errors.Wrap(err, "upsert alert_types docu")
 	}
 	if info.Matched != 0 {
-		return nil, fmt.Errorf("already exists")
+		return nil, AlreadyExistsErr
 	}
 
 	at = new(AlertTypes)
@@ -136,7 +149,7 @@ func (db *MonitorDB) CreateAlertType(name string) (at *AlertTypes, err error) {
 	return at, nil
 }
 
-func (db *MonitorDB) CreateUserAlertRelations(user *Users, alert *AlertTypes) (uar *UserAlertRelations, err error) {
+func (db *MonitorDB) CreateOrGetUserAlertRelations(user *Users, alert *AlertTypes) (uar *UserAlertRelations, err error) {
 	var info *mgo.ChangeInfo
 	if info, err = db.GetUserAlertRelationsCol().Upsert(
 		bson.M{"user_id": user.ID, "alert_id": alert.ID},
@@ -150,9 +163,9 @@ func (db *MonitorDB) CreateUserAlertRelations(user *Users, alert *AlertTypes) (u
 	); err != nil {
 		return nil, errors.Wrap(err, "upsert user_alert_relations docu")
 	}
-	if info.Matched != 0 {
-		return nil, fmt.Errorf("already exists")
-	}
+	// if info.Matched != 0 {
+	// 	return nil, AlreadyExistsErr
+	// }
 
 	uar = new(UserAlertRelations)
 	if err = db.GetUserAlertRelationsCol().Find(bson.M{
@@ -285,9 +298,31 @@ func (db *MonitorDB) ValidateTokenForAlertType(token, alert_type string) (alert 
 	return alert, nil
 }
 
+func (db *MonitorDB) RegisterUserAlertRelation(uid int, alertName string, joinKey string) (uar *UserAlertRelations, err error) {
+	utils.Logger.Info("RegisterUserAlertRelation", zap.Int("uid", uid), zap.String("alert", alertName))
+	u := new(Users)
+	if err = db.GetUsersCol().Find(bson.M{"uid": uid}).One(u); err == mgo.ErrNotFound {
+		return nil, fmt.Errorf("user not found")
+	} else if err != nil {
+		return nil, errors.Wrap(err, "load user by uid: "+strconv.FormatInt(int64(uid), 10))
+	}
+
+	alert := new(AlertTypes)
+	if err = db.GetAlertTypesCol().Find(bson.M{"name": alertName}).One(alert); err == mgo.ErrNotFound {
+		return nil, fmt.Errorf("alert_type not found")
+	} else if err != nil {
+		return nil, errors.Wrap(err, "load alert_type by name: "+alertName)
+	}
+
+	if alert.JoinKey != joinKey {
+		return nil, fmt.Errorf("join_key invalidate")
+	}
+
+	return db.CreateOrGetUserAlertRelations(u, alert)
+}
+
 func (db *MonitorDB) LoadUserByUID(telegramUID int) (u *Users, err error) {
 	utils.Logger.Debug("LoadUserByUID", zap.Int("uid", telegramUID))
-
 	u = new(Users)
 	if err = db.GetUsersCol().Find(bson.M{
 		"uid": telegramUID,
@@ -298,4 +333,61 @@ func (db *MonitorDB) LoadUserByUID(telegramUID int) (u *Users, err error) {
 	}
 
 	return u, nil
+}
+
+func (db *MonitorDB) IsUserSubAlert(uid int, alertName string) (alert *AlertTypes, err error) {
+	utils.Logger.Debug("IsUserSubAlert", zap.Int("uid", uid), zap.String("alert", alertName))
+	alert = new(AlertTypes)
+	if err = db.GetAlertTypesCol().Find(bson.M{"name": alertName}).One(alert); err != nil {
+		return
+	}
+
+	u := new(Users)
+	if err = db.GetUsersCol().Find(bson.M{"uid": uid}).One(u); err != nil {
+		return
+	}
+
+	uar := new(UserAlertRelations)
+	if err = db.GetUserAlertRelationsCol().Find(bson.M{
+		"user_id":  u.ID,
+		"alert_id": alert.ID,
+	}).One(uar); err != nil {
+		return
+	}
+
+	return alert, nil
+}
+
+func (db *MonitorDB) RefreshAlertTokenAndKey(alert *AlertTypes) (err error) {
+	utils.Logger.Info("RefreshAlertTokenAndKey", zap.String("alert", alert.Name))
+	alert.PushToken = generatePushToken()
+	alert.JoinKey = generateJoinKey()
+	return db.GetAlertTypesCol().UpdateId(
+		alert.ID,
+		bson.M{
+			"$set": bson.M{
+				"push_token":  alert.PushToken,
+				"join_key":    alert.JoinKey,
+				"modified_at": utils.Clock.GetUTCNow(),
+			},
+		},
+	)
+}
+
+func (db *MonitorDB) RemoveUAR(uid int, alertName string) (err error) {
+	utils.Logger.Info("remove user_alert_relation", zap.Int("uid", uid), zap.String("alert", alertName))
+	alert := new(AlertTypes)
+	if err = db.GetAlertTypesCol().Find(bson.M{"name": alertName}).One(alert); err != nil {
+		return
+	}
+
+	u := new(Users)
+	if err = db.GetUsersCol().Find(bson.M{"uid": uid}).One(u); err != nil {
+		return
+	}
+
+	return db.GetUserAlertRelationsCol().Remove(bson.M{
+		"user_id":  u.ID,
+		"alert_id": alert.ID,
+	})
 }
