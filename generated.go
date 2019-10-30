@@ -12,6 +12,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/Laisky/laisky-blog-graphql/blog"
+	"github.com/Laisky/laisky-blog-graphql/telegram"
 	"github.com/Laisky/laisky-blog-graphql/twitter"
 	"github.com/Laisky/laisky-blog-graphql/types"
 	"github.com/vektah/gqlparser"
@@ -40,6 +41,8 @@ type ResolverRoot interface {
 	BlogUser() BlogUserResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
+	TelegramAlertType() TelegramAlertTypeResolver
+	TelegramUser() TelegramUserResolver
 	Tweet() TweetResolver
 	TwitterUser() TwitterUserResolver
 }
@@ -83,11 +86,30 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		BlogPostCategories func(childComplexity int) int
-		BlogPostInfo       func(childComplexity int) int
-		BlogPosts          func(childComplexity int, page *Pagination, tag string, categoryURL *string, length int, name string, regexp string) int
-		Hello              func(childComplexity int) int
-		TwitterStatues     func(childComplexity int, page *Pagination, username string, sort *Sort, topic string, regexp string) int
+		BlogPostCategories   func(childComplexity int) int
+		BlogPostInfo         func(childComplexity int) int
+		BlogPosts            func(childComplexity int, page *Pagination, tag string, categoryURL *string, length int, name string, regexp string) int
+		Hello                func(childComplexity int) int
+		TelegramAlertTypes   func(childComplexity int, page *Pagination, name string) int
+		TelegramMonitorUsers func(childComplexity int, page *Pagination, name string) int
+		TwitterStatues       func(childComplexity int, page *Pagination, username string, sort *Sort, topic string, regexp string) int
+	}
+
+	TelegramAlertType struct {
+		CreatedAt  func(childComplexity int) int
+		ID         func(childComplexity int) int
+		ModifiedAt func(childComplexity int) int
+		Name       func(childComplexity int) int
+		SubUsers   func(childComplexity int) int
+	}
+
+	TelegramUser struct {
+		CreatedAt  func(childComplexity int) int
+		ID         func(childComplexity int) int
+		ModifiedAt func(childComplexity int) int
+		Name       func(childComplexity int) int
+		SubAlerts  func(childComplexity int) int
+		TelegramID func(childComplexity int) int
 	}
 
 	Tweet struct {
@@ -134,6 +156,23 @@ type QueryResolver interface {
 	BlogPosts(ctx context.Context, page *Pagination, tag string, categoryURL *string, length int, name string, regexp string) ([]*blog.Post, error)
 	BlogPostInfo(ctx context.Context) (*blog.PostInfo, error)
 	BlogPostCategories(ctx context.Context) ([]*blog.Category, error)
+	TelegramMonitorUsers(ctx context.Context, page *Pagination, name string) ([]*telegram.Users, error)
+	TelegramAlertTypes(ctx context.Context, page *Pagination, name string) ([]*telegram.AlertTypes, error)
+}
+type TelegramAlertTypeResolver interface {
+	ID(ctx context.Context, obj *telegram.AlertTypes) (string, error)
+	CreatedAt(ctx context.Context, obj *telegram.AlertTypes) (*types.Datetime, error)
+	ModifiedAt(ctx context.Context, obj *telegram.AlertTypes) (*types.Datetime, error)
+
+	SubUsers(ctx context.Context, obj *telegram.AlertTypes) ([]*telegram.Users, error)
+}
+type TelegramUserResolver interface {
+	ID(ctx context.Context, obj *telegram.Users) (string, error)
+	CreatedAt(ctx context.Context, obj *telegram.Users) (*types.Datetime, error)
+	ModifiedAt(ctx context.Context, obj *telegram.Users) (*types.Datetime, error)
+	TelegramID(ctx context.Context, obj *telegram.Users) (string, error)
+
+	SubAlerts(ctx context.Context, obj *telegram.Users) ([]*telegram.AlertTypes, error)
 }
 type TweetResolver interface {
 	ID(ctx context.Context, obj *twitter.Tweet) (string, error)
@@ -347,6 +386,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Hello(childComplexity), true
 
+	case "Query.TelegramAlertTypes":
+		if e.complexity.Query.TelegramAlertTypes == nil {
+			break
+		}
+
+		args, err := ec.field_Query_TelegramAlertTypes_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.TelegramAlertTypes(childComplexity, args["page"].(*Pagination), args["name"].(string)), true
+
+	case "Query.TelegramMonitorUsers":
+		if e.complexity.Query.TelegramMonitorUsers == nil {
+			break
+		}
+
+		args, err := ec.field_Query_TelegramMonitorUsers_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.TelegramMonitorUsers(childComplexity, args["page"].(*Pagination), args["name"].(string)), true
+
 	case "Query.TwitterStatues":
 		if e.complexity.Query.TwitterStatues == nil {
 			break
@@ -358,6 +421,83 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.TwitterStatues(childComplexity, args["page"].(*Pagination), args["username"].(string), args["sort"].(*Sort), args["topic"].(string), args["regexp"].(string)), true
+
+	case "TelegramAlertType.CreatedAt":
+		if e.complexity.TelegramAlertType.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.TelegramAlertType.CreatedAt(childComplexity), true
+
+	case "TelegramAlertType.ID":
+		if e.complexity.TelegramAlertType.ID == nil {
+			break
+		}
+
+		return e.complexity.TelegramAlertType.ID(childComplexity), true
+
+	case "TelegramAlertType.ModifiedAt":
+		if e.complexity.TelegramAlertType.ModifiedAt == nil {
+			break
+		}
+
+		return e.complexity.TelegramAlertType.ModifiedAt(childComplexity), true
+
+	case "TelegramAlertType.Name":
+		if e.complexity.TelegramAlertType.Name == nil {
+			break
+		}
+
+		return e.complexity.TelegramAlertType.Name(childComplexity), true
+
+	case "TelegramAlertType.SubUsers":
+		if e.complexity.TelegramAlertType.SubUsers == nil {
+			break
+		}
+
+		return e.complexity.TelegramAlertType.SubUsers(childComplexity), true
+
+	case "TelegramUser.CreatedAt":
+		if e.complexity.TelegramUser.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.TelegramUser.CreatedAt(childComplexity), true
+
+	case "TelegramUser.ID":
+		if e.complexity.TelegramUser.ID == nil {
+			break
+		}
+
+		return e.complexity.TelegramUser.ID(childComplexity), true
+
+	case "TelegramUser.ModifiedAt":
+		if e.complexity.TelegramUser.ModifiedAt == nil {
+			break
+		}
+
+		return e.complexity.TelegramUser.ModifiedAt(childComplexity), true
+
+	case "TelegramUser.Name":
+		if e.complexity.TelegramUser.Name == nil {
+			break
+		}
+
+		return e.complexity.TelegramUser.Name(childComplexity), true
+
+	case "TelegramUser.SubAlerts":
+		if e.complexity.TelegramUser.SubAlerts == nil {
+			break
+		}
+
+		return e.complexity.TelegramUser.SubAlerts(childComplexity), true
+
+	case "TelegramUser.TelegramID":
+		if e.complexity.TelegramUser.TelegramID == nil {
+			break
+		}
+
+		return e.complexity.TelegramUser.TelegramID(childComplexity), true
 
 	case "Tweet.CreatedAt":
 		if e.complexity.Tweet.CreatedAt == nil {
@@ -575,6 +715,31 @@ type BlogCategory {
     name: String!
     url: String!
 }
+
+input NewBlogPost {
+  name: String!
+  title: String!
+  markdown: String!
+  type: BlogPostType!
+}
+`},
+	&ast.Source{Name: "./telegram/schema.graphql", Input: `type TelegramUser {
+    id: String!
+    created_at: Date!
+    modified_at: Date!
+    telegram_id: String!
+    name: String!
+    sub_alerts: [TelegramAlertType]!
+}
+
+type TelegramAlertType {
+    id: String!
+    created_at: Date!
+    modified_at: Date!
+    name: String!
+    sub_users: [TelegramUser]!
+}
+
 `},
 	&ast.Source{Name: "./twitter/schema.graphql", Input: `type Tweet {
     # mongo_id: String!
@@ -625,7 +790,8 @@ type Query {
     username: String! = "ppcelery",
     sort: Sort = {sort_by: "id", order: DESC},
     topic: String! = "",
-    regexp: String! = ""): [Tweet]!
+    regexp: String! = "",
+  ): [Tweet]!
 
   # blog
   BlogPosts(page: Pagination = {page: 0, size: 10},
@@ -633,18 +799,20 @@ type Query {
     category_url: String,  # "" means empty, nil means ignore
     length: Int! = 0,  # content length, 0 means total
     name: String! = "",
-    regexp: String! = ""): [BlogPost]!
+    regexp: String! = "",
+  ): [BlogPost]!
   BlogPostInfo: PostInfo!
   BlogPostCategories: [BlogCategory]!
+
+  # telegram monitor
+  TelegramMonitorUsers(page: Pagination = {page: 0, size: 10},
+    name: String! = "",
+  ): [TelegramUser]!
+  TelegramAlertTypes(page: Pagination = {page: 0, size: 10},
+    name: String! = "",
+  ): [TelegramAlertType]!
 }
 
-
-input NewBlogPost {
-  name: String!
-  title: String!
-  markdown: String!
-  type: BlogPostType!
-}
 
 type Mutation {
   BlogCreatePost(post: NewBlogPost!): BlogPost!
@@ -759,6 +927,50 @@ func (ec *executionContext) field_Query_BlogPosts_args(ctx context.Context, rawA
 		}
 	}
 	args["regexp"] = arg5
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_TelegramAlertTypes_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *Pagination
+	if tmp, ok := rawArgs["page"]; ok {
+		arg0, err = ec.unmarshalOPagination2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚐPagination(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["page"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["name"]; ok {
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["name"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_TelegramMonitorUsers_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *Pagination
+	if tmp, ok := rawArgs["page"]; ok {
+		arg0, err = ec.unmarshalOPagination2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚐPagination(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["page"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["name"]; ok {
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["name"] = arg1
 	return args, nil
 }
 
@@ -1531,6 +1743,74 @@ func (ec *executionContext) _Query_BlogPostCategories(ctx context.Context, field
 	return ec.marshalNBlogCategory2ᚕᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋblogᚐCategory(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_TelegramMonitorUsers(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_TelegramMonitorUsers_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().TelegramMonitorUsers(rctx, args["page"].(*Pagination), args["name"].(string))
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*telegram.Users)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNTelegramUser2ᚕᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋtelegramᚐUsers(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_TelegramAlertTypes(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_TelegramAlertTypes_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().TelegramAlertTypes(rctx, args["page"].(*Pagination), args["name"].(string))
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*telegram.AlertTypes)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNTelegramAlertType2ᚕᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋtelegramᚐAlertTypes(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
@@ -1584,6 +1864,303 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TelegramAlertType_id(ctx context.Context, field graphql.CollectedField, obj *telegram.AlertTypes) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "TelegramAlertType",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.TelegramAlertType().ID(rctx, obj)
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TelegramAlertType_created_at(ctx context.Context, field graphql.CollectedField, obj *telegram.AlertTypes) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "TelegramAlertType",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.TelegramAlertType().CreatedAt(rctx, obj)
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*types.Datetime)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNDate2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋtypesᚐDatetime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TelegramAlertType_modified_at(ctx context.Context, field graphql.CollectedField, obj *telegram.AlertTypes) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "TelegramAlertType",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.TelegramAlertType().ModifiedAt(rctx, obj)
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*types.Datetime)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNDate2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋtypesᚐDatetime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TelegramAlertType_name(ctx context.Context, field graphql.CollectedField, obj *telegram.AlertTypes) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "TelegramAlertType",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TelegramAlertType_sub_users(ctx context.Context, field graphql.CollectedField, obj *telegram.AlertTypes) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "TelegramAlertType",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.TelegramAlertType().SubUsers(rctx, obj)
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*telegram.Users)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNTelegramUser2ᚕᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋtelegramᚐUsers(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TelegramUser_id(ctx context.Context, field graphql.CollectedField, obj *telegram.Users) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "TelegramUser",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.TelegramUser().ID(rctx, obj)
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TelegramUser_created_at(ctx context.Context, field graphql.CollectedField, obj *telegram.Users) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "TelegramUser",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.TelegramUser().CreatedAt(rctx, obj)
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*types.Datetime)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNDate2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋtypesᚐDatetime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TelegramUser_modified_at(ctx context.Context, field graphql.CollectedField, obj *telegram.Users) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "TelegramUser",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.TelegramUser().ModifiedAt(rctx, obj)
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*types.Datetime)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNDate2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋtypesᚐDatetime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TelegramUser_telegram_id(ctx context.Context, field graphql.CollectedField, obj *telegram.Users) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "TelegramUser",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.TelegramUser().TelegramID(rctx, obj)
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TelegramUser_name(ctx context.Context, field graphql.CollectedField, obj *telegram.Users) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "TelegramUser",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TelegramUser_sub_alerts(ctx context.Context, field graphql.CollectedField, obj *telegram.Users) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "TelegramUser",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.TelegramUser().SubAlerts(rctx, obj)
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*telegram.AlertTypes)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNTelegramAlertType2ᚕᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋtelegramᚐAlertTypes(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Tweet_id(ctx context.Context, field graphql.CollectedField, obj *twitter.Tweet) graphql.Marshaler {
@@ -3242,10 +3819,218 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}
 				return res
 			})
+		case "TelegramMonitorUsers":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_TelegramMonitorUsers(ctx, field)
+				if res == graphql.Null {
+					invalid = true
+				}
+				return res
+			})
+		case "TelegramAlertTypes":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_TelegramAlertTypes(ctx, field)
+				if res == graphql.Null {
+					invalid = true
+				}
+				return res
+			})
 		case "__type":
 			out.Values[i] = ec._Query___type(ctx, field)
 		case "__schema":
 			out.Values[i] = ec._Query___schema(ctx, field)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalid {
+		return graphql.Null
+	}
+	return out
+}
+
+var telegramAlertTypeImplementors = []string{"TelegramAlertType"}
+
+func (ec *executionContext) _TelegramAlertType(ctx context.Context, sel ast.SelectionSet, obj *telegram.AlertTypes) graphql.Marshaler {
+	fields := graphql.CollectFields(ctx, sel, telegramAlertTypeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	invalid := false
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("TelegramAlertType")
+		case "id":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._TelegramAlertType_id(ctx, field, obj)
+				if res == graphql.Null {
+					invalid = true
+				}
+				return res
+			})
+		case "created_at":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._TelegramAlertType_created_at(ctx, field, obj)
+				if res == graphql.Null {
+					invalid = true
+				}
+				return res
+			})
+		case "modified_at":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._TelegramAlertType_modified_at(ctx, field, obj)
+				if res == graphql.Null {
+					invalid = true
+				}
+				return res
+			})
+		case "name":
+			out.Values[i] = ec._TelegramAlertType_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalid = true
+			}
+		case "sub_users":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._TelegramAlertType_sub_users(ctx, field, obj)
+				if res == graphql.Null {
+					invalid = true
+				}
+				return res
+			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalid {
+		return graphql.Null
+	}
+	return out
+}
+
+var telegramUserImplementors = []string{"TelegramUser"}
+
+func (ec *executionContext) _TelegramUser(ctx context.Context, sel ast.SelectionSet, obj *telegram.Users) graphql.Marshaler {
+	fields := graphql.CollectFields(ctx, sel, telegramUserImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	invalid := false
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("TelegramUser")
+		case "id":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._TelegramUser_id(ctx, field, obj)
+				if res == graphql.Null {
+					invalid = true
+				}
+				return res
+			})
+		case "created_at":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._TelegramUser_created_at(ctx, field, obj)
+				if res == graphql.Null {
+					invalid = true
+				}
+				return res
+			})
+		case "modified_at":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._TelegramUser_modified_at(ctx, field, obj)
+				if res == graphql.Null {
+					invalid = true
+				}
+				return res
+			})
+		case "telegram_id":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._TelegramUser_telegram_id(ctx, field, obj)
+				if res == graphql.Null {
+					invalid = true
+				}
+				return res
+			})
+		case "name":
+			out.Values[i] = ec._TelegramUser_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalid = true
+			}
+		case "sub_alerts":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._TelegramUser_sub_alerts(ctx, field, obj)
+				if res == graphql.Null {
+					invalid = true
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3893,6 +4678,80 @@ func (ec *executionContext) marshalNString2ᚕstring(ctx context.Context, sel as
 	return ret
 }
 
+func (ec *executionContext) marshalNTelegramAlertType2ᚕᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋtelegramᚐAlertTypes(ctx context.Context, sel ast.SelectionSet, v []*telegram.AlertTypes) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		rctx := &graphql.ResolverContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithResolverContext(ctx, rctx)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOTelegramAlertType2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋtelegramᚐAlertTypes(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalNTelegramUser2ᚕᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋtelegramᚐUsers(ctx context.Context, sel ast.SelectionSet, v []*telegram.Users) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		rctx := &graphql.ResolverContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithResolverContext(ctx, rctx)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOTelegramUser2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋtelegramᚐUsers(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
 func (ec *executionContext) marshalNTweet2ᚕᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋtwitterᚐTweet(ctx context.Context, sel ast.SelectionSet, v []*twitter.Tweet) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -4290,6 +5149,28 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 		return graphql.Null
 	}
 	return ec.marshalOString2string(ctx, sel, *v)
+}
+
+func (ec *executionContext) marshalOTelegramAlertType2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋtelegramᚐAlertTypes(ctx context.Context, sel ast.SelectionSet, v telegram.AlertTypes) graphql.Marshaler {
+	return ec._TelegramAlertType(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalOTelegramAlertType2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋtelegramᚐAlertTypes(ctx context.Context, sel ast.SelectionSet, v *telegram.AlertTypes) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._TelegramAlertType(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOTelegramUser2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋtelegramᚐUsers(ctx context.Context, sel ast.SelectionSet, v telegram.Users) graphql.Marshaler {
+	return ec._TelegramUser(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalOTelegramUser2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋtelegramᚐUsers(ctx context.Context, sel ast.SelectionSet, v *telegram.Users) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._TelegramUser(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOTweet2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋtwitterᚐTweet(ctx context.Context, sel ast.SelectionSet, v twitter.Tweet) graphql.Marshaler {

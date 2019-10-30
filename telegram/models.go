@@ -21,6 +21,11 @@ const (
 	userAlertRelationColName = "user_alert_relations"
 )
 
+type TelegramQueryCfg struct {
+	Name       string
+	Page, Size int
+}
+
 // MonitorDB db
 type MonitorDB struct {
 	dbcli *models.DB
@@ -164,4 +169,99 @@ func (db *MonitorDB) CreateUserAlertRelations(user *Users, alert *AlertTypes) (u
 	}
 
 	return uar, nil
+}
+
+func (db *MonitorDB) LoadUsers(cfg *TelegramQueryCfg) (users []*Users, err error) {
+	utils.Logger.Debug("LoadUsers",
+		zap.String("name", cfg.Name),
+		zap.Int("page", cfg.Page),
+		zap.Int("size", cfg.Size))
+
+	if cfg.Size > 200 || cfg.Size < 0 {
+		return nil, fmt.Errorf("size shoule in [0~200]")
+	}
+
+	users = []*Users{}
+	if err = db.GetUsersCol().Find(bson.M{
+		"name": cfg.Name,
+	}).
+		Skip(cfg.Page * cfg.Size).
+		Limit(cfg.Size).
+		All(&users); err != nil {
+		return nil, errors.Wrap(err, "load users from db")
+	}
+
+	return users, nil
+}
+
+func (db *MonitorDB) LoadAlertTypes(cfg *TelegramQueryCfg) (alerts []*AlertTypes, err error) {
+	utils.Logger.Debug("LoadAlertTypes",
+		zap.String("name", cfg.Name),
+		zap.Int("page", cfg.Page),
+		zap.Int("size", cfg.Size))
+
+	if cfg.Size > 200 || cfg.Size < 0 {
+		return nil, fmt.Errorf("size shoule in [0~200]")
+	}
+
+	alerts = []*AlertTypes{}
+	if err = db.GetAlertTypesCol().Find(bson.M{
+		"name": cfg.Name,
+	}).
+		Skip(cfg.Page * cfg.Size).
+		Limit(cfg.Size).
+		All(&alerts); err != nil {
+		return nil, errors.Wrap(err, "load alert_types from db")
+	}
+
+	return alerts, nil
+}
+
+func (db *MonitorDB) LoadAlertTypesByUser(u *Users) (alerts []*AlertTypes, err error) {
+	utils.Logger.Debug("LoadAlertTypesByUser",
+		zap.String("uid", u.ID.Hex()),
+		zap.String("username", u.Name))
+
+	alerts = []*AlertTypes{}
+	uar := new(UserAlertRelations)
+	iter := db.GetUserAlertRelationsCol().Find(bson.M{
+		"user_id": u.ID,
+	}).Iter()
+	for iter.Next(uar) {
+		alert := new(AlertTypes)
+		if err = db.GetAlertTypesCol().FindId(uar.AlertMongoID).One(alert); err == mgo.ErrNotFound {
+			utils.Logger.Warn("can not find alert_types by user_alert_relations",
+				zap.String("user_alert_relation_id", uar.ID.Hex()))
+			continue
+		} else if err != nil {
+			return nil, errors.Wrap(err, "load alert_type by user_alert_relations")
+		}
+		alerts = append(alerts, alert)
+	}
+
+	return alerts, nil
+}
+
+func (db *MonitorDB) LoadUsersByAlertType(a *AlertTypes) (users []*Users, err error) {
+	utils.Logger.Debug("LoadUsersByAlertType",
+		zap.String("alert_type", a.ID.Hex()))
+
+	users = []*Users{}
+	uar := new(UserAlertRelations)
+	iter := db.GetUserAlertRelationsCol().Find(bson.M{
+		"alert_id": a.ID,
+	}).Iter()
+	for iter.Next(uar) {
+		user := new(Users)
+		if err = db.GetUsersCol().FindId(uar.UserMongoID).One(user); err == mgo.ErrNotFound {
+			utils.Logger.Warn("can not find user by user_alert_relations",
+				zap.String("user_alert_relation_id", uar.ID.Hex()))
+			continue
+		} else if err != nil {
+			return nil, errors.Wrap(err, "load alert_type by user_alert_relations")
+		}
+		users = append(users, user)
+	}
+
+	return users, nil
 }

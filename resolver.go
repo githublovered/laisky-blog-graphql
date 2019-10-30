@@ -10,6 +10,7 @@ import (
 	"github.com/Laisky/go-utils"
 
 	"github.com/Laisky/laisky-blog-graphql/blog"
+	"github.com/Laisky/laisky-blog-graphql/telegram"
 	"github.com/Laisky/laisky-blog-graphql/twitter"
 	"github.com/Laisky/laisky-blog-graphql/types"
 	"github.com/pkg/errors"
@@ -37,7 +38,14 @@ func (r *Resolver) BlogPost() BlogPostResolver {
 func (r *Resolver) BlogUser() BlogUserResolver {
 	return &blogUserResolver{r}
 }
+func (r *Resolver) TelegramAlertType() TelegramAlertTypeResolver {
+	return &telegramAlertTypeResolver{r}
+}
+func (r *Resolver) TelegramUser() TelegramUserResolver {
+	return &telegramUserResolver{r}
+}
 
+// ===========================
 // query
 // ===========================
 
@@ -46,6 +54,11 @@ type tweetResolver struct{ *Resolver }
 type twitterUserResolver struct{ *Resolver }
 type blogPostResolver struct{ *Resolver }
 type blogUserResolver struct{ *Resolver }
+type telegramAlertTypeResolver struct{ *Resolver }
+type telegramUserResolver struct{ *Resolver }
+
+// query resolver
+// --------------
 
 func (t *twitterUserResolver) ID(ctx context.Context, obj *twitter.User) (string, error) {
 	return strconv.FormatInt(int64(obj.ID), 10), nil
@@ -93,6 +106,58 @@ func (q *queryResolver) BlogPosts(ctx context.Context, page *Pagination, tag str
 func (q *queryResolver) BlogPostCategories(ctx context.Context) ([]*blog.Category, error) {
 	return blogDB.LoadAllCategories()
 }
+func (q *queryResolver) TelegramMonitorUsers(ctx context.Context, page *Pagination, name string) ([]*telegram.Users, error) {
+	cfg := &telegram.TelegramQueryCfg{
+		Page: page.Page,
+		Size: page.Size,
+		Name: name,
+	}
+	return monitorDB.LoadUsers(cfg)
+}
+func (q *queryResolver) TelegramAlertTypes(ctx context.Context, page *Pagination, name string) ([]*telegram.AlertTypes, error) {
+	cfg := &telegram.TelegramQueryCfg{
+		Page: page.Page,
+		Size: page.Size,
+		Name: name,
+	}
+	return monitorDB.LoadAlertTypes(cfg)
+}
+
+// ----------------
+// telegram monitor resolver
+// ----------------
+func (t *telegramUserResolver) ID(ctx context.Context, obj *telegram.Users) (string, error) {
+	return obj.ID.Hex(), nil
+}
+func (t *telegramUserResolver) CreatedAt(ctx context.Context, obj *telegram.Users) (*types.Datetime, error) {
+	return types.NewDatetimeFromTime(obj.CreatedAt), nil
+}
+func (t *telegramUserResolver) ModifiedAt(ctx context.Context, obj *telegram.Users) (*types.Datetime, error) {
+	return types.NewDatetimeFromTime(obj.ModifiedAt), nil
+}
+func (t *telegramUserResolver) TelegramID(ctx context.Context, obj *telegram.Users) (string, error) {
+	return strconv.FormatInt(int64(obj.UID), 10), nil
+}
+func (t *telegramUserResolver) SubAlerts(ctx context.Context, obj *telegram.Users) ([]*telegram.AlertTypes, error) {
+	return monitorDB.LoadAlertTypesByUser(obj)
+}
+
+func (t *telegramAlertTypeResolver) ID(ctx context.Context, obj *telegram.AlertTypes) (string, error) {
+	return obj.ID.Hex(), nil
+}
+func (t *telegramAlertTypeResolver) CreatedAt(ctx context.Context, obj *telegram.AlertTypes) (*types.Datetime, error) {
+	return types.NewDatetimeFromTime(obj.CreatedAt), nil
+}
+func (t *telegramAlertTypeResolver) ModifiedAt(ctx context.Context, obj *telegram.AlertTypes) (*types.Datetime, error) {
+	return types.NewDatetimeFromTime(obj.ModifiedAt), nil
+}
+func (t *telegramAlertTypeResolver) SubUsers(ctx context.Context, obj *telegram.AlertTypes) ([]*telegram.Users, error) {
+	return monitorDB.LoadUsersByAlertType(obj)
+}
+
+// ----------------
+// twitter resolver
+// ----------------
 
 func (t *tweetResolver) ID(ctx context.Context, obj *twitter.Tweet) (string, error) {
 	return strconv.FormatInt(obj.ID, 10), nil
@@ -137,6 +202,10 @@ func (t *tweetResolver) ReplyTo(ctx context.Context, obj *twitter.Tweet) (tweet 
 	return tweet, nil
 }
 
+// ----------------
+// blog resolver
+// ----------------
+
 func (r *blogPostResolver) MongoID(ctx context.Context, obj *blog.Post) (string, error) {
 	return obj.ID.Hex(), nil
 }
@@ -169,6 +238,7 @@ func (r *blogUserResolver) ID(ctx context.Context, obj *blog.User) (string, erro
 	return obj.ID.Hex(), nil
 }
 
+// =========
 // mutations
 // =========
 type mutationResolver struct{ *Resolver }

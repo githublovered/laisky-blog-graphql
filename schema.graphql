@@ -25,7 +25,8 @@ type Query {
     username: String! = "ppcelery",
     sort: Sort = {sort_by: "id", order: DESC},
     topic: String! = "",
-    regexp: String! = ""): [Tweet]!
+    regexp: String! = "",
+  ): [Tweet]!
 
   # blog
   BlogPosts(page: Pagination = {page: 0, size: 10},
@@ -33,18 +34,20 @@ type Query {
     category_url: String,  # "" means empty, nil means ignore
     length: Int! = 0,  # content length, 0 means total
     name: String! = "",
-    regexp: String! = ""): [BlogPost]!
+    regexp: String! = "",
+  ): [BlogPost]!
   BlogPostInfo: PostInfo!
   BlogPostCategories: [BlogCategory]!
+
+  # telegram monitor
+  TelegramMonitorUsers(page: Pagination = {page: 0, size: 10},
+    name: String! = "",
+  ): [TelegramUser]!
+  TelegramAlertTypes(page: Pagination = {page: 0, size: 10},
+    name: String! = "",
+  ): [TelegramAlertType]!
 }
 
-
-input NewBlogPost {
-  name: String!
-  title: String!
-  markdown: String!
-  type: BlogPostType!
-}
 
 type Mutation {
   BlogCreatePost(post: NewBlogPost!): BlogPost!
