@@ -369,16 +369,48 @@ var IncorrectErr = errors.New("Password Or Username Incorrect")
 func (db *BlogDB) ValidateLogin(account, password string) (u *User, err error) {
 	libs.Logger.Debug("ValidateLogin", zap.String("account", account))
 	u = &User{}
-	if err := db.dbcli.GetCol(USER_COL_NAME).Find(bson.M{"account": account}).One(u); err != nil && err != mgo.ErrNotFound {
-		libs.Logger.Error("try to load user got error", zap.Error(err))
-	} else if utils.ValidatePasswordHash([]byte(u.Password), []byte(password)) {
+	if err := db.dbcli.GetCol(USER_COL_NAME).Find(bson.M{"account": account}).One(u); err != nil {
+		if err == mgo.ErrNotFound {
+			return nil, fmt.Errorf("user notfound")
+		}
+
+		return nil, err
+	}
+
+	if utils.ValidatePasswordHash([]byte(u.Password), []byte(password)) {
+		libs.Logger.Debug("user login", zap.String("user", u.Account))
 		return u, nil
 	}
+
 	return nil, IncorrectErr
 }
 
 var supporttedTypes = map[string]struct{}{
 	"markdown": {},
+}
+
+// UpdatePostCategory change blog post's category
+func (db *BlogDB) UpdatePostCategory(name, category string) (p *Post, err error) {
+	c := new(Category)
+	if err = db.GetCategoriesCol().Find(bson.M{"name": category}).One(c); err != nil {
+		return nil, errors.Wrapf(err, "load category `%s`", category)
+	}
+
+	p = new(Post)
+	if err = db.GetPostsCol().Find(bson.M{"post_name": name}).One(p); err != nil {
+		return nil, errors.Wrapf(err, "load post by name `%s`", name)
+	}
+
+	if p.Category == c.ID {
+		return p, nil
+	}
+
+	if err = db.GetPostsCol().UpdateId(p.ID, bson.M{"category": c.ID}); err != nil {
+		return nil, errors.Wrapf(err, "update post `%s` category", p.Name)
+	}
+
+	libs.Logger.Info("updated post category", zap.String("post", p.Name), zap.String("category", c.Name))
+	return p, nil
 }
 
 func (db *BlogDB) UpdatePost(user *User, name string, title string, md string, typeArg string) (p *Post, err error) {
@@ -387,9 +419,14 @@ func (db *BlogDB) UpdatePost(user *User, name string, title string, md string, t
 	if _, ok := supporttedTypes[typeArg]; !ok {
 		return nil, fmt.Errorf("type `%v` not supportted", typeArg)
 	}
-	if err = db.dbcli.GetCol(POST_COL_NAME).Find(bson.M{"post_name": name}).One(p); err == mgo.ErrNotFound {
-		return nil, errors.Wrap(err, "post not exists")
+	if err = db.GetPostsCol().Find(bson.M{"post_name": name}).One(p); err != nil {
+		if err == mgo.ErrNotFound {
+			return nil, errors.Wrap(err, "post not exists")
+		}
+
+		return nil, err
 	}
+
 	if p.Author != user.ID {
 		return nil, fmt.Errorf("post do not belong to this user")
 	}
@@ -405,5 +442,6 @@ func (db *BlogDB) UpdatePost(user *User, name string, title string, md string, t
 		return nil, errors.Wrap(err, "try to update post got error")
 	}
 
+	libs.Logger.Info("updated post", zap.String("post", p.Name), zap.String("user", user.Account))
 	return p, nil
 }

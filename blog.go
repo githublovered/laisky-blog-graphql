@@ -134,5 +134,15 @@ func (r *mutationResolver) BlogAmendPost(ctx context.Context, post NewBlogPost) 
 		return nil, err
 	}
 
-	return blogDB.UpdatePost(user, post.Name, post.Title, post.Markdown, post.Type)
+	if post.Name == "" {
+		return nil, fmt.Errorf("title & name cannot be empty")
+	}
+
+	// only update category
+	if post.Category != nil {
+		return blogDB.UpdatePostCategory(post.Name, *post.Category)
+	}
+
+	// update post content
+	return blogDB.UpdatePost(user, post.Name, post.Title, post.Markdown, string(post.Type))
 }
