@@ -114,12 +114,11 @@ type BlogPostCfg struct {
 }
 
 func (db *BlogDB) LoadPosts(cfg *BlogPostCfg) (results []*Post, err error) {
-	libs.Logger.Debug("LoadPosts",
+	logger := libs.Logger.With(
 		zap.Int("page", cfg.Page), zap.Int("size", cfg.Size),
 		zap.String("tag", cfg.Tag),
 		zap.String("regexp", cfg.Regexp),
 	)
-
 	if cfg.Size > 200 || cfg.Size < 0 {
 		return nil, fmt.Errorf("size shoule in [0~200]")
 	}
@@ -129,14 +128,14 @@ func (db *BlogDB) LoadPosts(cfg *BlogPostCfg) (results []*Post, err error) {
 		return nil, errors.Wrap(err, "try to make query got error")
 	}
 
-	// libs.Logger.Debug("load blog posts", zap.String("query", fmt.Sprint(query)))
+	// logger.Debug("load blog posts", zap.String("query", fmt.Sprint(query)))
 	iter := db.dbcli.GetCol(POST_COL_NAME).Find(query).
 		Sort("-_id").
 		Skip(cfg.Page * cfg.Size).
 		Limit(cfg.Size).
 		Iter()
 	results = db.filterPosts(cfg, iter)
-	libs.Logger.Debug("load posts done", zap.Int("n", len(results)))
+	logger.Debug("load posts done", zap.Int("n", len(results)))
 	return results, nil
 }
 
@@ -200,7 +199,7 @@ func (db *BlogDB) filterPosts(cfg *BlogPostCfg, iter *mgo.Iter) (results []*Post
 	result := &Post{}
 	isValidate := true
 	for iter.Next(result) {
-		libs.Logger.Debug("filter post", zap.String("post", fmt.Sprintf("%+v", result)))
+		// libs.Logger.Debug("filter post", zap.String("post", fmt.Sprintf("%+v", result)))
 		for _, f := range [...]func(*Post) bool{
 			// filters pipeline
 			passwordFilter,
