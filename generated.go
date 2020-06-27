@@ -931,6 +931,7 @@ input NewBlogPost {
   title: String!
   markdown: String!
   type: BlogPostType!
+  category: String
 }
 `, BuiltIn: false},
 	&ast.Source{Name: "./telegram/schema.graphql", Input: `type TelegramUser {
@@ -4642,6 +4643,12 @@ func (ec *executionContext) unmarshalInputNewBlogPost(ctx context.Context, obj i
 		case "type":
 			var err error
 			it.Type, err = ec.unmarshalNBlogPostType2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚐBlogPostType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "category":
+			var err error
+			it.Category, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}

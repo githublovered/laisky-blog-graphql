@@ -18,9 +18,6 @@ func setupSettings(ctx context.Context) {
 	if utils.Settings.GetBool("debug") {
 		fmt.Println("run in debug mode")
 		utils.Settings.Set("log-level", "debug")
-		if err := libs.Logger.ChangeLevel("debug"); err != nil {
-			libs.Logger.Panic("change log level to debug", zap.Error(err))
-		}
 	} else { // prod mode
 		fmt.Println("run in prod mode")
 	}
@@ -55,6 +52,11 @@ func setupLogger(ctx context.Context) {
 	libs.Logger = libs.Logger.WithOptions(
 		zap.HooksWithFields(alertPusher.GetZapHook()),
 	).Named("laisky-graphql")
+
+	lvl := utils.Settings.GetString("log-level")
+	if err := libs.Logger.ChangeLevel(lvl); err != nil {
+		libs.Logger.Panic("change log level", zap.Error(err), zap.String("level", lvl))
+	}
 }
 
 func setupArgs() {
