@@ -19,6 +19,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/vektah/gqlparser/v2 v2.0.1
 	golang.org/x/tools v0.0.0-20200501005904-d351ea090f9b // indirect
+	google.golang.org/api v0.20.0
 	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22
 	gopkg.in/tucnak/telebot.v2 v2.3.2
 )
