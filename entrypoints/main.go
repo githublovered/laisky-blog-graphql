@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 	"time"
 
 	"github.com/Laisky/go-utils"
@@ -18,9 +19,6 @@ func setupSettings(ctx context.Context) {
 	if utils.Settings.GetBool("debug") {
 		fmt.Println("run in debug mode")
 		utils.Settings.Set("log-level", "debug")
-		if err := libs.Logger.ChangeLevel("debug"); err != nil {
-			libs.Logger.Panic("change log level to debug", zap.Error(err))
-		}
 	} else { // prod mode
 		fmt.Println("run in prod mode")
 	}
@@ -30,6 +28,7 @@ func setupSettings(ctx context.Context) {
 
 	// load configuration
 	cfgPath := utils.Settings.GetString("config")
+	utils.Settings.Set("cfg_dir", filepath.Dir(cfgPath))
 	if err = utils.Settings.SetupFromFile(cfgPath); err != nil {
 		libs.Logger.Panic("load configuration",
 			zap.Error(err),
@@ -55,6 +54,11 @@ func setupLogger(ctx context.Context) {
 	libs.Logger = libs.Logger.WithOptions(
 		zap.HooksWithFields(alertPusher.GetZapHook()),
 	).Named("laisky-graphql")
+
+	lvl := utils.Settings.GetString("log-level")
+	if err := libs.Logger.ChangeLevel(lvl); err != nil {
+		libs.Logger.Panic("change log level", zap.Error(err), zap.String("level", lvl))
+	}
 }
 
 func setupArgs() {

@@ -38,4 +38,5 @@ input NewBlogPost {
   title: String!
   markdown: String!
   type: BlogPostType!
+  category: String
 }

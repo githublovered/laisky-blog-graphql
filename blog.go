@@ -23,9 +23,9 @@ func (r *Resolver) BlogUser() BlogUserResolver {
 type blogPostResolver struct{ *Resolver }
 type blogUserResolver struct{ *Resolver }
 
-// =================
+// =====================================
 // query resolver
-// =================
+// =====================================
 
 func (q *queryResolver) BlogPostInfo(ctx context.Context) (*blog.PostInfo, error) {
 	return blogDB.LoadPostInfo()
@@ -87,10 +87,11 @@ func (r *blogUserResolver) ID(ctx context.Context, obj *blog.User) (string, erro
 	return obj.ID.Hex(), nil
 }
 
-// ============================
+// =====================================
 // mutations
-// ============================
+// =====================================
 
+// BlogCreatePost create new blog post
 func (r *mutationResolver) BlogCreatePost(ctx context.Context, input NewBlogPost) (*blog.Post, error) {
 	user, err := validateAndGetUser(ctx)
 	if err != nil {
@@ -100,6 +101,8 @@ func (r *mutationResolver) BlogCreatePost(ctx context.Context, input NewBlogPost
 
 	return blogDB.NewPost(user.ID, string(input.Title), input.Name, string(input.Markdown), input.Type.String())
 }
+
+// BlogLogin login in blog page
 func (r *mutationResolver) BlogLogin(ctx context.Context, account string, password string) (user *blog.User, err error) {
 	if user, err = blogDB.ValidateLogin(account, password); err != nil {
 		libs.Logger.Debug("user invalidate", zap.Error(err))
@@ -123,6 +126,7 @@ func (r *mutationResolver) BlogLogin(ctx context.Context, account string, passwo
 
 	return user, nil
 }
+
 func (r *mutationResolver) BlogAmendPost(ctx context.Context, post NewBlogPost) (*blog.Post, error) {
 	user, err := validateAndGetUser(ctx)
 	if err != nil {
@@ -130,5 +134,15 @@ func (r *mutationResolver) BlogAmendPost(ctx context.Context, post NewBlogPost) 
 		return nil, err
 	}
 
-	return blogDB.UpdatePost(user, post.Name, string(post.Title), string(post.Markdown), string(post.Type))
+	if post.Name == "" {
+		return nil, fmt.Errorf("title & name cannot be empty")
+	}
+
+	// only update category
+	if post.Category != nil {
+		return blogDB.UpdatePostCategory(post.Name, *post.Category)
+	}
+
+	// update post content
+	return blogDB.UpdatePost(user, post.Name, post.Title, post.Markdown, string(post.Type))
 }
