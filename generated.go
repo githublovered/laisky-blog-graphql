@@ -790,7 +790,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	&ast.Source{Name: "schema.graphql", Input: `scalar Date
+	{Name: "schema.graphql", Input: `scalar Date
 scalar QuotedString
 scalar JSONString
 
@@ -869,7 +869,7 @@ type Mutation {
   ): String!
 }
 `, BuiltIn: false},
-	&ast.Source{Name: "./twitter/schema.graphql", Input: `type Tweet {
+	{Name: "./twitter/schema.graphql", Input: `type Tweet {
     # mongo_id: String!
     id: String!
     created_at: Date
@@ -891,7 +891,7 @@ type TwitterUser {
     description: String!
 }
 `, BuiltIn: false},
-	&ast.Source{Name: "./blog/schema.graphql", Input: `enum BlogPostType {
+	{Name: "./blog/schema.graphql", Input: `enum BlogPostType {
     markdown
     slide
     html  # legacy posts
@@ -933,7 +933,7 @@ input NewBlogPost {
   type: BlogPostType!
 }
 `, BuiltIn: false},
-	&ast.Source{Name: "./telegram/schema.graphql", Input: `type TelegramUser {
+	{Name: "./telegram/schema.graphql", Input: `type TelegramUser {
     id: String!
     created_at: Date!
     modified_at: Date!
@@ -951,7 +951,7 @@ type TelegramAlertType {
 }
 
 `, BuiltIn: false},
-	&ast.Source{Name: "./general/schema.graphql", Input: `type Lock {
+	{Name: "./general/schema.graphql", Input: `type Lock {
     name: String!
     owner_id: String!
     expires_at: Date!
@@ -974,6 +974,7 @@ func (ec *executionContext) field_Mutation_AcquireLock_args(ctx context.Context,
 	args := map[string]interface{}{}
 	var arg0 string
 	if tmp, ok := rawArgs["lock_name"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("lock_name"))
 		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
@@ -982,6 +983,7 @@ func (ec *executionContext) field_Mutation_AcquireLock_args(ctx context.Context,
 	args["lock_name"] = arg0
 	var arg1 int
 	if tmp, ok := rawArgs["duration_sec"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("duration_sec"))
 		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
@@ -990,6 +992,7 @@ func (ec *executionContext) field_Mutation_AcquireLock_args(ctx context.Context,
 	args["duration_sec"] = arg1
 	var arg2 *bool
 	if tmp, ok := rawArgs["is_renewal"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("is_renewal"))
 		arg2, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
 		if err != nil {
 			return nil, err
@@ -1004,6 +1007,7 @@ func (ec *executionContext) field_Mutation_BlogAmendPost_args(ctx context.Contex
 	args := map[string]interface{}{}
 	var arg0 NewBlogPost
 	if tmp, ok := rawArgs["post"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("post"))
 		arg0, err = ec.unmarshalNNewBlogPost2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚐNewBlogPost(ctx, tmp)
 		if err != nil {
 			return nil, err
@@ -1018,6 +1022,7 @@ func (ec *executionContext) field_Mutation_BlogCreatePost_args(ctx context.Conte
 	args := map[string]interface{}{}
 	var arg0 NewBlogPost
 	if tmp, ok := rawArgs["post"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("post"))
 		arg0, err = ec.unmarshalNNewBlogPost2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚐNewBlogPost(ctx, tmp)
 		if err != nil {
 			return nil, err
@@ -1032,6 +1037,7 @@ func (ec *executionContext) field_Mutation_BlogLogin_args(ctx context.Context, r
 	args := map[string]interface{}{}
 	var arg0 string
 	if tmp, ok := rawArgs["account"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("account"))
 		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
@@ -1040,6 +1046,7 @@ func (ec *executionContext) field_Mutation_BlogLogin_args(ctx context.Context, r
 	args["account"] = arg0
 	var arg1 string
 	if tmp, ok := rawArgs["password"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("password"))
 		arg1, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
@@ -1054,6 +1061,7 @@ func (ec *executionContext) field_Mutation_CreateGeneralToken_args(ctx context.C
 	args := map[string]interface{}{}
 	var arg0 string
 	if tmp, ok := rawArgs["username"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("username"))
 		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
@@ -1062,6 +1070,7 @@ func (ec *executionContext) field_Mutation_CreateGeneralToken_args(ctx context.C
 	args["username"] = arg0
 	var arg1 int
 	if tmp, ok := rawArgs["duration_sec"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("duration_sec"))
 		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
@@ -1076,6 +1085,7 @@ func (ec *executionContext) field_Mutation_TelegramMonitorAlert_args(ctx context
 	args := map[string]interface{}{}
 	var arg0 string
 	if tmp, ok := rawArgs["type"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("type"))
 		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
@@ -1084,6 +1094,7 @@ func (ec *executionContext) field_Mutation_TelegramMonitorAlert_args(ctx context
 	args["type"] = arg0
 	var arg1 string
 	if tmp, ok := rawArgs["token"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("token"))
 		arg1, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
@@ -1092,6 +1103,7 @@ func (ec *executionContext) field_Mutation_TelegramMonitorAlert_args(ctx context
 	args["token"] = arg1
 	var arg2 string
 	if tmp, ok := rawArgs["msg"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("msg"))
 		arg2, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
@@ -1106,6 +1118,7 @@ func (ec *executionContext) field_Query_BlogPosts_args(ctx context.Context, rawA
 	args := map[string]interface{}{}
 	var arg0 *Pagination
 	if tmp, ok := rawArgs["page"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("page"))
 		arg0, err = ec.unmarshalOPagination2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚐPagination(ctx, tmp)
 		if err != nil {
 			return nil, err
@@ -1114,6 +1127,7 @@ func (ec *executionContext) field_Query_BlogPosts_args(ctx context.Context, rawA
 	args["page"] = arg0
 	var arg1 string
 	if tmp, ok := rawArgs["tag"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("tag"))
 		arg1, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
@@ -1122,6 +1136,7 @@ func (ec *executionContext) field_Query_BlogPosts_args(ctx context.Context, rawA
 	args["tag"] = arg1
 	var arg2 *string
 	if tmp, ok := rawArgs["category_url"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("category_url"))
 		arg2, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
@@ -1130,6 +1145,7 @@ func (ec *executionContext) field_Query_BlogPosts_args(ctx context.Context, rawA
 	args["category_url"] = arg2
 	var arg3 int
 	if tmp, ok := rawArgs["length"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("length"))
 		arg3, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
@@ -1138,6 +1154,7 @@ func (ec *executionContext) field_Query_BlogPosts_args(ctx context.Context, rawA
 	args["length"] = arg3
 	var arg4 string
 	if tmp, ok := rawArgs["name"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("name"))
 		arg4, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
@@ -1146,6 +1163,7 @@ func (ec *executionContext) field_Query_BlogPosts_args(ctx context.Context, rawA
 	args["name"] = arg4
 	var arg5 string
 	if tmp, ok := rawArgs["regexp"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("regexp"))
 		arg5, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
@@ -1160,6 +1178,7 @@ func (ec *executionContext) field_Query_LockPermissions_args(ctx context.Context
 	args := map[string]interface{}{}
 	var arg0 string
 	if tmp, ok := rawArgs["username"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("username"))
 		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
@@ -1174,6 +1193,7 @@ func (ec *executionContext) field_Query_Lock_args(ctx context.Context, rawArgs m
 	args := map[string]interface{}{}
 	var arg0 string
 	if tmp, ok := rawArgs["name"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("name"))
 		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
@@ -1188,6 +1208,7 @@ func (ec *executionContext) field_Query_TelegramAlertTypes_args(ctx context.Cont
 	args := map[string]interface{}{}
 	var arg0 *Pagination
 	if tmp, ok := rawArgs["page"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("page"))
 		arg0, err = ec.unmarshalOPagination2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚐPagination(ctx, tmp)
 		if err != nil {
 			return nil, err
@@ -1196,6 +1217,7 @@ func (ec *executionContext) field_Query_TelegramAlertTypes_args(ctx context.Cont
 	args["page"] = arg0
 	var arg1 string
 	if tmp, ok := rawArgs["name"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("name"))
 		arg1, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
@@ -1210,6 +1232,7 @@ func (ec *executionContext) field_Query_TelegramMonitorUsers_args(ctx context.Co
 	args := map[string]interface{}{}
 	var arg0 *Pagination
 	if tmp, ok := rawArgs["page"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("page"))
 		arg0, err = ec.unmarshalOPagination2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚐPagination(ctx, tmp)
 		if err != nil {
 			return nil, err
@@ -1218,6 +1241,7 @@ func (ec *executionContext) field_Query_TelegramMonitorUsers_args(ctx context.Co
 	args["page"] = arg0
 	var arg1 string
 	if tmp, ok := rawArgs["name"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("name"))
 		arg1, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
@@ -1232,6 +1256,7 @@ func (ec *executionContext) field_Query_TwitterStatues_args(ctx context.Context,
 	args := map[string]interface{}{}
 	var arg0 *Pagination
 	if tmp, ok := rawArgs["page"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("page"))
 		arg0, err = ec.unmarshalOPagination2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚐPagination(ctx, tmp)
 		if err != nil {
 			return nil, err
@@ -1240,6 +1265,7 @@ func (ec *executionContext) field_Query_TwitterStatues_args(ctx context.Context,
 	args["page"] = arg0
 	var arg1 string
 	if tmp, ok := rawArgs["username"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("username"))
 		arg1, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
@@ -1248,6 +1274,7 @@ func (ec *executionContext) field_Query_TwitterStatues_args(ctx context.Context,
 	args["username"] = arg1
 	var arg2 *Sort
 	if tmp, ok := rawArgs["sort"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("sort"))
 		arg2, err = ec.unmarshalOSort2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚐSort(ctx, tmp)
 		if err != nil {
 			return nil, err
@@ -1256,6 +1283,7 @@ func (ec *executionContext) field_Query_TwitterStatues_args(ctx context.Context,
 	args["sort"] = arg2
 	var arg3 string
 	if tmp, ok := rawArgs["topic"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("topic"))
 		arg3, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
@@ -1264,6 +1292,7 @@ func (ec *executionContext) field_Query_TwitterStatues_args(ctx context.Context,
 	args["topic"] = arg3
 	var arg4 string
 	if tmp, ok := rawArgs["regexp"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("regexp"))
 		arg4, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
@@ -1278,6 +1307,7 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	args := map[string]interface{}{}
 	var arg0 string
 	if tmp, ok := rawArgs["name"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("name"))
 		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
@@ -1292,6 +1322,7 @@ func (ec *executionContext) field___Type_enumValues_args(ctx context.Context, ra
 	args := map[string]interface{}{}
 	var arg0 bool
 	if tmp, ok := rawArgs["includeDeprecated"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("includeDeprecated"))
 		arg0, err = ec.unmarshalOBoolean2bool(ctx, tmp)
 		if err != nil {
 			return nil, err
@@ -1306,6 +1337,7 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 	args := map[string]interface{}{}
 	var arg0 bool
 	if tmp, ok := rawArgs["includeDeprecated"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("includeDeprecated"))
 		arg0, err = ec.unmarshalOBoolean2bool(ctx, tmp)
 		if err != nil {
 			return nil, err
@@ -4623,24 +4655,32 @@ func (ec *executionContext) unmarshalInputNewBlogPost(ctx context.Context, obj i
 		switch k {
 		case "name":
 			var err error
+
+			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("name"))
 			it.Name, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "title":
 			var err error
+
+			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("title"))
 			it.Title, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "markdown":
 			var err error
+
+			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("markdown"))
 			it.Markdown, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "type":
 			var err error
+
+			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("type"))
 			it.Type, err = ec.unmarshalNBlogPostType2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚐBlogPostType(ctx, v)
 			if err != nil {
 				return it, err
@@ -4659,12 +4699,16 @@ func (ec *executionContext) unmarshalInputPagination(ctx context.Context, obj in
 		switch k {
 		case "page":
 			var err error
+
+			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("page"))
 			it.Page, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "size":
 			var err error
+
+			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("size"))
 			it.Size, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
@@ -4687,12 +4731,16 @@ func (ec *executionContext) unmarshalInputSort(ctx context.Context, obj interfac
 		switch k {
 		case "sort_by":
 			var err error
+
+			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("sort_by"))
 			it.SortBy, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "order":
 			var err error
+
+			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("order"))
 			it.Order, err = ec.unmarshalNSortOrder2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚐSortOrder(ctx, v)
 			if err != nil {
 				return it, err
@@ -5905,7 +5953,8 @@ func (ec *executionContext) marshalNBlogPost2ᚖgithubᚗcomᚋLaiskyᚋlaisky�
 
 func (ec *executionContext) unmarshalNBlogPostType2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚐBlogPostType(ctx context.Context, v interface{}) (BlogPostType, error) {
 	var res BlogPostType
-	return res, res.UnmarshalGQL(v)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.WrapErrorWithInputPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNBlogPostType2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚐBlogPostType(ctx context.Context, sel ast.SelectionSet, v BlogPostType) graphql.Marshaler {
@@ -5927,7 +5976,8 @@ func (ec *executionContext) marshalNBlogUser2ᚖgithubᚗcomᚋLaiskyᚋlaisky�
 }
 
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
-	return graphql.UnmarshalBoolean(v)
+	res, err := graphql.UnmarshalBoolean(v)
+	return res, graphql.WrapErrorWithInputPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.SelectionSet, v bool) graphql.Marshaler {
@@ -5942,7 +5992,8 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 
 func (ec *executionContext) unmarshalNDate2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋlibsᚐDatetime(ctx context.Context, v interface{}) (libs.Datetime, error) {
 	var res libs.Datetime
-	return res, res.UnmarshalGQL(v)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.WrapErrorWithInputPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNDate2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋlibsᚐDatetime(ctx context.Context, sel ast.SelectionSet, v libs.Datetime) graphql.Marshaler {
@@ -5950,11 +6001,9 @@ func (ec *executionContext) marshalNDate2githubᚗcomᚋLaiskyᚋlaiskyᚑblog�
 }
 
 func (ec *executionContext) unmarshalNDate2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋlibsᚐDatetime(ctx context.Context, v interface{}) (*libs.Datetime, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalNDate2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋlibsᚐDatetime(ctx, v)
-	return &res, err
+	var res = new(libs.Datetime)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.WrapErrorWithInputPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNDate2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋlibsᚐDatetime(ctx context.Context, sel ast.SelectionSet, v *libs.Datetime) graphql.Marshaler {
@@ -6005,7 +6054,8 @@ func (ec *executionContext) marshalNGeneralUser2ᚕᚖgithubᚗcomᚋLaiskyᚋla
 }
 
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
-	return graphql.UnmarshalInt(v)
+	res, err := graphql.UnmarshalInt(v)
+	return res, graphql.WrapErrorWithInputPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
@@ -6033,7 +6083,8 @@ func (ec *executionContext) marshalNLock2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblo
 }
 
 func (ec *executionContext) unmarshalNNewBlogPost2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚐNewBlogPost(ctx context.Context, v interface{}) (NewBlogPost, error) {
-	return ec.unmarshalInputNewBlogPost(ctx, v)
+	res, err := ec.unmarshalInputNewBlogPost(ctx, v)
+	return res, graphql.WrapErrorWithInputPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNPostInfo2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋblogᚐPostInfo(ctx context.Context, sel ast.SelectionSet, v blog.PostInfo) graphql.Marshaler {
@@ -6052,7 +6103,8 @@ func (ec *executionContext) marshalNPostInfo2ᚖgithubᚗcomᚋLaiskyᚋlaisky�
 
 func (ec *executionContext) unmarshalNSortOrder2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚐSortOrder(ctx context.Context, v interface{}) (SortOrder, error) {
 	var res SortOrder
-	return res, res.UnmarshalGQL(v)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.WrapErrorWithInputPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNSortOrder2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚐSortOrder(ctx context.Context, sel ast.SelectionSet, v SortOrder) graphql.Marshaler {
@@ -6060,7 +6112,8 @@ func (ec *executionContext) marshalNSortOrder2githubᚗcomᚋLaiskyᚋlaiskyᚑb
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
-	return graphql.UnmarshalString(v)
+	res, err := graphql.UnmarshalString(v)
+	return res, graphql.WrapErrorWithInputPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
@@ -6085,9 +6138,10 @@ func (ec *executionContext) unmarshalNString2ᚕstringᚄ(ctx context.Context, v
 	var err error
 	res := make([]string, len(vSlice))
 	for i := range vSlice {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithIndex(i))
 		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
 		if err != nil {
-			return nil, err
+			return nil, graphql.WrapErrorWithInputPath(ctx, err)
 		}
 	}
 	return res, nil
@@ -6269,7 +6323,8 @@ func (ec *executionContext) marshalN__Directive2ᚕgithubᚗcomᚋ99designsᚋgq
 }
 
 func (ec *executionContext) unmarshalN__DirectiveLocation2string(ctx context.Context, v interface{}) (string, error) {
-	return graphql.UnmarshalString(v)
+	res, err := graphql.UnmarshalString(v)
+	return res, graphql.WrapErrorWithInputPath(ctx, err)
 }
 
 func (ec *executionContext) marshalN__DirectiveLocation2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
@@ -6294,9 +6349,10 @@ func (ec *executionContext) unmarshalN__DirectiveLocation2ᚕstringᚄ(ctx conte
 	var err error
 	res := make([]string, len(vSlice))
 	for i := range vSlice {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithIndex(i))
 		res[i], err = ec.unmarshalN__DirectiveLocation2string(ctx, vSlice[i])
 		if err != nil {
-			return nil, err
+			return nil, graphql.WrapErrorWithInputPath(ctx, err)
 		}
 	}
 	return res, nil
@@ -6440,7 +6496,8 @@ func (ec *executionContext) marshalN__Type2ᚖgithubᚗcomᚋ99designsᚋgqlgen�
 }
 
 func (ec *executionContext) unmarshalN__TypeKind2string(ctx context.Context, v interface{}) (string, error) {
-	return graphql.UnmarshalString(v)
+	res, err := graphql.UnmarshalString(v)
+	return res, graphql.WrapErrorWithInputPath(ctx, err)
 }
 
 func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
@@ -6453,19 +6510,11 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
-func (ec *executionContext) marshalOBlogCategory2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋblogᚐCategory(ctx context.Context, sel ast.SelectionSet, v blog.Category) graphql.Marshaler {
-	return ec._BlogCategory(ctx, sel, &v)
-}
-
 func (ec *executionContext) marshalOBlogCategory2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋblogᚐCategory(ctx context.Context, sel ast.SelectionSet, v *blog.Category) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._BlogCategory(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalOBlogPost2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋblogᚐPost(ctx context.Context, sel ast.SelectionSet, v blog.Post) graphql.Marshaler {
-	return ec._BlogPost(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalOBlogPost2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋblogᚐPost(ctx context.Context, sel ast.SelectionSet, v *blog.Post) graphql.Marshaler {
@@ -6476,7 +6525,8 @@ func (ec *executionContext) marshalOBlogPost2ᚖgithubᚗcomᚋLaiskyᚋlaisky�
 }
 
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
-	return graphql.UnmarshalBoolean(v)
+	res, err := graphql.UnmarshalBoolean(v)
+	return res, graphql.WrapErrorWithInputPath(ctx, err)
 }
 
 func (ec *executionContext) marshalOBoolean2bool(ctx context.Context, sel ast.SelectionSet, v bool) graphql.Marshaler {
@@ -6487,32 +6537,24 @@ func (ec *executionContext) unmarshalOBoolean2ᚖbool(ctx context.Context, v int
 	if v == nil {
 		return nil, nil
 	}
-	res, err := ec.unmarshalOBoolean2bool(ctx, v)
-	return &res, err
+	res, err := graphql.UnmarshalBoolean(v)
+	return &res, graphql.WrapErrorWithInputPath(ctx, err)
 }
 
 func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast.SelectionSet, v *bool) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
-	return ec.marshalOBoolean2bool(ctx, sel, *v)
-}
-
-func (ec *executionContext) unmarshalODate2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋlibsᚐDatetime(ctx context.Context, v interface{}) (libs.Datetime, error) {
-	var res libs.Datetime
-	return res, res.UnmarshalGQL(v)
-}
-
-func (ec *executionContext) marshalODate2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋlibsᚐDatetime(ctx context.Context, sel ast.SelectionSet, v libs.Datetime) graphql.Marshaler {
-	return v
+	return graphql.MarshalBoolean(*v)
 }
 
 func (ec *executionContext) unmarshalODate2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋlibsᚐDatetime(ctx context.Context, v interface{}) (*libs.Datetime, error) {
 	if v == nil {
 		return nil, nil
 	}
-	res, err := ec.unmarshalODate2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋlibsᚐDatetime(ctx, v)
-	return &res, err
+	var res = new(libs.Datetime)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.WrapErrorWithInputPath(ctx, err)
 }
 
 func (ec *executionContext) marshalODate2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋlibsᚐDatetime(ctx context.Context, sel ast.SelectionSet, v *libs.Datetime) graphql.Marshaler {
@@ -6522,10 +6564,6 @@ func (ec *executionContext) marshalODate2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblo
 	return v
 }
 
-func (ec *executionContext) marshalOGeneralUser2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚐGeneralUser(ctx context.Context, sel ast.SelectionSet, v GeneralUser) graphql.Marshaler {
-	return ec._GeneralUser(ctx, sel, &v)
-}
-
 func (ec *executionContext) marshalOGeneralUser2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚐGeneralUser(ctx context.Context, sel ast.SelectionSet, v *GeneralUser) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -6533,32 +6571,25 @@ func (ec *executionContext) marshalOGeneralUser2ᚖgithubᚗcomᚋLaiskyᚋlaisk
 	return ec._GeneralUser(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOPagination2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚐPagination(ctx context.Context, v interface{}) (Pagination, error) {
-	return ec.unmarshalInputPagination(ctx, v)
-}
-
 func (ec *executionContext) unmarshalOPagination2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚐPagination(ctx context.Context, v interface{}) (*Pagination, error) {
 	if v == nil {
 		return nil, nil
 	}
-	res, err := ec.unmarshalOPagination2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚐPagination(ctx, v)
-	return &res, err
-}
-
-func (ec *executionContext) unmarshalOSort2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚐSort(ctx context.Context, v interface{}) (Sort, error) {
-	return ec.unmarshalInputSort(ctx, v)
+	res, err := ec.unmarshalInputPagination(ctx, v)
+	return &res, graphql.WrapErrorWithInputPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOSort2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚐSort(ctx context.Context, v interface{}) (*Sort, error) {
 	if v == nil {
 		return nil, nil
 	}
-	res, err := ec.unmarshalOSort2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚐSort(ctx, v)
-	return &res, err
+	res, err := ec.unmarshalInputSort(ctx, v)
+	return &res, graphql.WrapErrorWithInputPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {
-	return graphql.UnmarshalString(v)
+	res, err := graphql.UnmarshalString(v)
+	return res, graphql.WrapErrorWithInputPath(ctx, err)
 }
 
 func (ec *executionContext) marshalOString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
@@ -6566,6 +6597,9 @@ func (ec *executionContext) marshalOString2string(ctx context.Context, sel ast.S
 }
 
 func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
+	if v == nil {
+		return nil, nil
+	}
 	var vSlice []interface{}
 	if v != nil {
 		if tmp1, ok := v.([]interface{}); ok {
@@ -6577,9 +6611,10 @@ func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v
 	var err error
 	res := make([]string, len(vSlice))
 	for i := range vSlice {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithIndex(i))
 		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
 		if err != nil {
-			return nil, err
+			return nil, graphql.WrapErrorWithInputPath(ctx, err)
 		}
 	}
 	return res, nil
@@ -6601,19 +6636,15 @@ func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v in
 	if v == nil {
 		return nil, nil
 	}
-	res, err := ec.unmarshalOString2string(ctx, v)
-	return &res, err
+	res, err := graphql.UnmarshalString(v)
+	return &res, graphql.WrapErrorWithInputPath(ctx, err)
 }
 
 func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
-	return ec.marshalOString2string(ctx, sel, *v)
-}
-
-func (ec *executionContext) marshalOTelegramAlertType2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋtelegramᚐAlertTypes(ctx context.Context, sel ast.SelectionSet, v telegram.AlertTypes) graphql.Marshaler {
-	return ec._TelegramAlertType(ctx, sel, &v)
+	return graphql.MarshalString(*v)
 }
 
 func (ec *executionContext) marshalOTelegramAlertType2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋtelegramᚐAlertTypes(ctx context.Context, sel ast.SelectionSet, v *telegram.AlertTypes) graphql.Marshaler {
@@ -6623,10 +6654,6 @@ func (ec *executionContext) marshalOTelegramAlertType2ᚖgithubᚗcomᚋLaisky�
 	return ec._TelegramAlertType(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOTelegramUser2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋtelegramᚐUsers(ctx context.Context, sel ast.SelectionSet, v telegram.Users) graphql.Marshaler {
-	return ec._TelegramUser(ctx, sel, &v)
-}
-
 func (ec *executionContext) marshalOTelegramUser2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋtelegramᚐUsers(ctx context.Context, sel ast.SelectionSet, v *telegram.Users) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -6634,19 +6661,11 @@ func (ec *executionContext) marshalOTelegramUser2ᚖgithubᚗcomᚋLaiskyᚋlais
 	return ec._TelegramUser(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOTweet2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋtwitterᚐTweet(ctx context.Context, sel ast.SelectionSet, v twitter.Tweet) graphql.Marshaler {
-	return ec._Tweet(ctx, sel, &v)
-}
-
 func (ec *executionContext) marshalOTweet2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋtwitterᚐTweet(ctx context.Context, sel ast.SelectionSet, v *twitter.Tweet) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Tweet(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalOTwitterUser2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋtwitterᚐUser(ctx context.Context, sel ast.SelectionSet, v twitter.User) graphql.Marshaler {
-	return ec._TwitterUser(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalOTwitterUser2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚋtwitterᚐUser(ctx context.Context, sel ast.SelectionSet, v *twitter.User) graphql.Marshaler {
@@ -6776,19 +6795,11 @@ func (ec *executionContext) marshalO__InputValue2ᚕgithubᚗcomᚋ99designsᚋg
 	return ret
 }
 
-func (ec *executionContext) marshalO__Schema2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx context.Context, sel ast.SelectionSet, v introspection.Schema) graphql.Marshaler {
-	return ec.___Schema(ctx, sel, &v)
-}
-
 func (ec *executionContext) marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx context.Context, sel ast.SelectionSet, v *introspection.Schema) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec.___Schema(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalO__Type2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx context.Context, sel ast.SelectionSet, v introspection.Type) graphql.Marshaler {
-	return ec.___Type(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalO__Type2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐTypeᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.Type) graphql.Marshaler {
