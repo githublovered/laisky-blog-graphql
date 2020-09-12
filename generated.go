@@ -928,9 +928,9 @@ type BlogCategory {
 
 input NewBlogPost {
   name: String!
-  title: String!
-  markdown: String!
-  type: BlogPostType!
+  title: String
+  markdown: String
+  type: BlogPostType
   category: String
 }
 `, BuiltIn: false},
@@ -4666,7 +4666,7 @@ func (ec *executionContext) unmarshalInputNewBlogPost(ctx context.Context, obj i
 			var err error
 
 			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("title"))
-			it.Title, err = ec.unmarshalNString2string(ctx, v)
+			it.Title, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4674,7 +4674,7 @@ func (ec *executionContext) unmarshalInputNewBlogPost(ctx context.Context, obj i
 			var err error
 
 			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("markdown"))
-			it.Markdown, err = ec.unmarshalNString2string(ctx, v)
+			it.Markdown, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4682,12 +4682,14 @@ func (ec *executionContext) unmarshalInputNewBlogPost(ctx context.Context, obj i
 			var err error
 
 			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("type"))
-			it.Type, err = ec.unmarshalNBlogPostType2githubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚐBlogPostType(ctx, v)
+			it.Type, err = ec.unmarshalOBlogPostType2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚐBlogPostType(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "category":
 			var err error
+
+			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("category"))
 			it.Category, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
@@ -6529,6 +6531,22 @@ func (ec *executionContext) marshalOBlogPost2ᚖgithubᚗcomᚋLaiskyᚋlaisky�
 		return graphql.Null
 	}
 	return ec._BlogPost(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOBlogPostType2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚐBlogPostType(ctx context.Context, v interface{}) (*BlogPostType, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(BlogPostType)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.WrapErrorWithInputPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOBlogPostType2ᚖgithubᚗcomᚋLaiskyᚋlaiskyᚑblogᚑgraphqlᚐBlogPostType(ctx context.Context, sel ast.SelectionSet, v *BlogPostType) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v interface{}) (bool, error) {

@@ -404,7 +404,12 @@ func (db *BlogDB) UpdatePostCategory(name, category string) (p *Post, err error)
 		return p, nil
 	}
 
-	if err = db.GetPostsCol().UpdateId(p.ID, bson.M{"category": c.ID}); err != nil {
+	p.Category = c.ID
+	if err = db.GetPostsCol().UpdateId(p.ID, bson.M{
+		"$set": bson.M{
+			"category": c.ID,
+		},
+	}); err != nil {
 		return nil, errors.Wrapf(err, "update post `%s` category", p.Name)
 	}
 

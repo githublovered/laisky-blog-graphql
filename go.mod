@@ -5,7 +5,7 @@ go 1.15
 require (
 	cloud.google.com/go/firestore v1.3.0
 	github.com/99designs/gqlgen v0.12.2
-	github.com/Laisky/gin-middlewares v1.1.1
+	github.com/Laisky/gin-middlewares v1.1.2-0.20200912082353-ce091dfdd064
 	github.com/Laisky/go-utils v1.13.9
 	github.com/Laisky/zap v1.12.2
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible

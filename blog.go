@@ -99,7 +99,12 @@ func (r *mutationResolver) BlogCreatePost(ctx context.Context, input NewBlogPost
 		return nil, err
 	}
 
-	return blogDB.NewPost(user.ID, string(input.Title), input.Name, string(input.Markdown), input.Type.String())
+	if input.Title == nil ||
+		input.Markdown == nil {
+		return nil, fmt.Errorf("title & markdown must set")
+	}
+
+	return blogDB.NewPost(user.ID, *input.Title, input.Name, *input.Markdown, input.Type.String())
 }
 
 // BlogLogin login in blog page
@@ -143,6 +148,12 @@ func (r *mutationResolver) BlogAmendPost(ctx context.Context, post NewBlogPost) 
 		return blogDB.UpdatePostCategory(post.Name, *post.Category)
 	}
 
+	if post.Title == nil ||
+		post.Markdown == nil ||
+		post.Type == nil {
+		return nil, fmt.Errorf("title & markdown & type must set")
+	}
+
 	// update post content
-	return blogDB.UpdatePost(user, post.Name, post.Title, post.Markdown, string(post.Type))
+	return blogDB.UpdatePost(user, post.Name, *post.Title, *post.Markdown, post.Type.String())
 }

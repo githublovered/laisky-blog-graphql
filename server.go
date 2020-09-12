@@ -51,7 +51,8 @@ func RunServer(addr string) {
 	h.AddTransport(transport.POST{})
 	h.AddTransport(transport.Options{})
 	h.AddTransport(transport.MultipartForm{})
-	server.Any("/ui/", ginMiddlewares.FromStd(playground.Handler("GraphQL playground", "/graphql/query/")))
+	server.Any("/ui/", ginMiddlewares.FromStd(playground.Handler("GraphQL playground", "/query/")))
+	// server.Any("/ui/", ginMiddlewares.FromStd(playground.Handler("GraphQL playground", "/graphql/query/")))
 	server.Any("/query/", ginMiddlewares.FromStd(h.ServeHTTP))
 
 	libs.Logger.Info("listening on http", zap.String("addr", addr))
