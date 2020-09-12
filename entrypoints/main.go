@@ -29,7 +29,7 @@ func setupSettings(ctx context.Context) {
 	// load configuration
 	cfgPath := utils.Settings.GetString("config")
 	utils.Settings.Set("cfg_dir", filepath.Dir(cfgPath))
-	if err = utils.Settings.SetupFromFile(cfgPath); err != nil {
+	if err = utils.Settings.LoadFromFile(cfgPath); err != nil {
 		libs.Logger.Panic("load configuration",
 			zap.Error(err),
 			zap.String("config", cfgPath))
